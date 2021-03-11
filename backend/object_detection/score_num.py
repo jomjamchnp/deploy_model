@@ -19,10 +19,10 @@ import tensorflow as tf
 import sys
 import json
 from PIL import Image
-# from sympy import sympify
-# from sympy.geometry import Point2D, Segment2D, Circle
-# from shapely.geometry import Point
-# from shapely.geometry.polygon import Polygon
+from sympy import sympify
+from sympy.geometry import Point2D, Segment2D, Circle
+from shapely.geometry import Point
+from shapely.geometry.polygon import Polygon
 from math import sqrt
 import re
 import os
@@ -282,13 +282,21 @@ def check_clockwise(image,data,x_center,y_center,radius):
 	return output,mes
 
 def checkpoint(list,listp,classnum):
-	print("list of boxnum : ",list)
+	
+	# cv2.circle()
+	print("list of boxnum : ",list[classnum-1][:4])
+	print(list[classnum-1])
 	p1,p2 = listp
 	point = Point(p1, p2)
+	polygon = Polygon(list[classnum-1][:4])
+	#if(polygon.contains(point) == True):
+	#while(True):
+	#checkInArea(top_left,bottom_right,p)
 	#[(399, 428), (381, 361), (434, 330), (483, 379)]
-	polygon = Polygon(list)
+	
 	# print(polygon.contains(point))
-	print(polygon.contains(point))
+	# print(polygon.contains(point))
+
 	return polygon.contains(point),classnum
 
 def changestrtoint(c1,c2,name):
@@ -492,212 +500,259 @@ boxofnum =[]
 arraylist=[]
 list_boolean =[]
 
-def score_num(NAME):
+# def score_num(NAME):
     
-    c_errorQ1 = 0 
-    c_errorQ2 = 0 
-    c_errorQ3 = 0 
-    c_errorQ4 = 0 
+c_errorQ1 = 0 
+c_errorQ2 = 0 
+c_errorQ3 = 0 
+c_errorQ4 = 0 
 
-    # Name of the directory containing the object detection module we're using
-    IMAGE_NAME = NAME
-    FILE = '_num.jpg'
-    DETECT_FOLDER = 'detectcircle'
-    IMAGE_FOLDER = 'image_test'
+# Name of the directory containing the object detection module we're using
+IMAGE_NAME = 'test2'
+FILE = '.jpg'
+DETECT_FOLDER = 'detectcircle'
+IMAGE_FOLDER = 'image_test'
 
-    # Grab path to current working directory
-    CWD_PATH = os.getcwd()
-    PREVIOS_PATH = os.path.abspath(CWD_PATH+ "/../")
-    # Path to image
-    PATH_TO_IMAGE = os.path.join(IMAGE_FOLDER,IMAGE_NAME+FILE)
+# Grab path to current working directory
+CWD_PATH = os.getcwd()
+PREVIOS_PATH = os.path.abspath(CWD_PATH+ "/../")
+# Path to image
+PATH_TO_IMAGE = os.path.join(IMAGE_FOLDER,IMAGE_NAME+FILE)
 
-    #load json file
-    data_corr = []
-    data_circle = []
-    with open("json_num/script"+IMAGE_NAME+".json") as f:
-        data = json.load(f)
-    for p in data['coordinate']:
-        data_corr.append(p)
-    for p in data['circle']:
-        data_circle.append(p)
+#load json file
+data_corr = []
+data_circle = []
+with open("json_num/script"+IMAGE_NAME+".json") as f:
+	data = json.load(f)
+for p in data['coordinate']:
+	data_corr.append(p)
+for p in data['circle']:
+	data_circle.append(p)
 
-    x,y,r = data_circle
-    image = cv2.imread(PATH_TO_IMAGE)
-    output = image.copy()
-    num = r*(40/100)
-    in_r = r-int(num)
-    cv2.circle(output,(x, y),in_r, (255,0,0), 3)
-    j=2 #เส้นแรกอยู่บนเลข 5 ละวนตามเข็ม
-    for i in range(30,385,30):
-        x2,y2 = draw(x,y,r,i)
-        xend = int(x2)
-        yend = int(y2) 
-        cv2.line(output,(x,y),(xend,yend),(224, 45, 45),3)
-        line_list.append((xend,yend))
+x,y,r = data_circle
+image = cv2.imread(PATH_TO_IMAGE)
+output = image.copy()
+num = r*(40/100)
+in_r = r-int(num)
+cv2.circle(output,(x, y),in_r, (255,0,0), 3)
+j=2 #เส้นแรกอยู่บนเลข 5 ละวนตามเข็ม
+for i in range(30,385,30):
+	x2,y2 = draw(x,y,r,i)
+	xend = int(x2)
+	yend = int(y2) 
+	cv2.line(output,(x,y),(xend,yend),(224, 45, 45),3)
+	line_list.append((xend,yend))
 
-    print("line_list: ",line_list)
-    length = len(line_list)
-    print("length of line list: ",length)
+print("line_list: ",line_list)
+length = len(line_list)
+print("length of line list: ",length)
 
-    for b in range(length):
-        if (b==11):
-            p1,p2,p3,p4 = intersec(x,y,*(line_list[b]),*(line_list[0]),in_r)
-            pointcut = [line_list[0],(p3,p4),(p1,p2),line_list[b]]
-            listofp.append(pointcut)
+for b in range(length):
+	if (b==11):
+		p1,p2,p3,p4 = intersec(x,y,*(line_list[b]),*(line_list[0]),in_r)
+		pointcut = [line_list[0],(p3,p4),(p1,p2),line_list[b]]
+		listofp.append(pointcut)
 
-        else:
-            p1,p2,p3,p4 = intersec(x,y,*(line_list[b]),*(line_list[b+1]),in_r)
-            pointcut = [line_list[b+1],(p3,p4),(p1,p2),line_list[b]]
-            listofp.append(pointcut)
+	else:
+		p1,p2,p3,p4 = intersec(x,y,*(line_list[b]),*(line_list[b+1]),in_r)
+		pointcut = [line_list[b+1],(p3,p4),(p1,p2),line_list[b]]
+		listofp.append(pointcut)
 
-    #load coordinates from json file
-    for i in range(0, len(data_corr)):
-        line.append(data_corr[i])
-        ymin  = line[i][0]
-        ymax = line[i][1]
-        xmin = line[i][2]
-        xmax = line[i][3]
-        name = line[i][5][0].split(":")
-        list.append(str(name[0]))
-        p1 = quadrant(xmin,ymin,x,y)
-        p2 = quadrant(xmax,ymin,x,y)
-        p3 = quadrant(xmin,ymax,x,y)
-        p4 = quadrant(xmax,ymax,x,y)
-        total = p1+p2+p3+p4
-        j, k = (xmin+xmax)/2, (ymin+ymax)/2
-        list_centroid.append((int(j),int(k),str(name[0])))
-        # Draw a circle in the center of rectangle
-        cv2.circle(output, center=(int(j), int(k)), radius=3, color=(255, 0, 0), thickness=5)
-        check_quardrant(name[0],total,xmin)
+#load coordinates from json file
+for i in range(0, len(data_corr)):
+	line.append(data_corr[i])
+	ymin  = line[i][0]
+	ymax = line[i][1]
+	xmin = line[i][2]
+	xmax = line[i][3]
+	name = line[i][5][0].split(":")
+	list.append(str(name[0]))
+	p1 = quadrant(xmin,ymin,x,y)
+	p2 = quadrant(xmax,ymin,x,y)
+	p3 = quadrant(xmin,ymax,x,y)
+	p4 = quadrant(xmax,ymax,x,y)
+	total = p1+p2+p3+p4
+	j, k = (xmin+xmax)/2, (ymin+ymax)/2
+	list_centroid.append((int(j),int(k),str(name[0])))
+	# Draw a circle in the center of rectangle
+	cv2.circle(output, center=(int(j), int(k)), radius=3, color=(255, 0, 0), thickness=5)
+	check_quardrant(name[0],total,xmin)
 
-    match,dif = checklist(list)
-    print("match? : ",match)
-    print("diff= " ,dif) #คลาสที่ไม่มี 
-    for i in list:
-        print(i)
-        digit = checkNumberClass(i)
-        list_digit.append(digit)
-
-
-    list_digit.sort()
-    print(list_digit)
-
-    total_point = 0
-    score_1 = 0
-    score_2 = 0
-    score_3 = 0
-    point1 = 0
-    point2 = 0
-    point3 = 0
-    changeclass(dif)
-    #print("list of quardrant: ",list_ofq)
-    list_ofq.sort(key = lambda x: x[2])  
-
-    # print("sort: ",list_ofq)
-    for i in range(0, len(list_ofq)):
-        print(list_ofq[i][0])
-
-    j = 5
-    L=0
-    for i in list_centroid:
-        c1,c2,name = i
-        c,_ = changestrtoint(c1,c2,name)
-        sort_list_centroid.append(c)
-
-    sort_list_centroid.sort(key = lambda x: x[2])  
-    print("sort: ",sort_list_centroid)
-    #start intercept point5
-    Y = [5,6,7,8,9,10,11,12,1,2,3,4]
-    sort_listofp = [listofp for _,listofp in sorted(zip(Y,listofp))]
-    # add class in sort_listofp 
-    for k in range(0, len(sort_listofp)):
-        # print (k)
-        result = [[m, n, s,t,k+1] for m, n, s,t in sort_listofp]
-        boxofnum.append(result[k])
-
-    #[(710, 126), (639, 197), (530, 134), (556, 38), 1]
-
-    idx = arraylist
-    for i in range(len(idx)):
-        print(idx)
-        sort_list_centroid.insert(int(idx[i])-1, (0,0,0))
-
-    for i in range(len(boxofnum)):
-        t = sort_list_centroid[i][:2]
-        a, b = t
-        boolean,classnum = checkpoint(boxofnum[i][:4],sort_list_centroid[i][:2],sort_list_centroid[i][2])
-        cv2.circle(output,(int(a),int(b)), radius=0, color=(88, 89, 40), thickness=1)
-        cv2.putText(output,str(boolean), (int(a),int(b)), font, 1, (116, 7, 97), 2, cv2.LINE_AA)
-        list_boolean.append(boolean)
-    #check out of area of num
-    t = []
-    for i in list_digit:
-        t.append(list_boolean[i-1])
-    if False in t :
-        point3 = 0
-    else:
-        point3 = 1
-
-    #1.clockwise 2.arrange  3.located 1:yes 0:no
-    #clockwise
-    output,mes = check_clockwise(output,data_corr,x,y,r)
-    if(mes=="clockwise"):
-        point1 = 1
-        point2 = 1
-    elif(mes=="anti-clockwise"):
-        point1 = 0
-        point2 = 1
-    elif(mes=="other form arrange"):
-        point1 = 0
-        point2 = 0
+match,dif = checklist(list)
+print("match? : ",match)
+print("diff= " ,dif) #คลาสที่ไม่มี 
+for i in list:
+	print(i)
+	digit = checkNumberClass(i)
+	list_digit.append(digit)
 
 
-    total_point = point1+point2+point3
-    if (total_point==3):
-        score_3 = 2
-    elif (total_point==0):
-        score_3 = 0
-    else:
-        score_3 = 1
+list_digit.sort()
+print(list_digit)
 
-    #test
-    #dif = ['1','2','3','6']
-    #score rule-1(1-12 on clock) 
-    if(len(dif)<=1):
-        score_1 = 2
-    elif((len(dif)>=2 and len(dif)<=3 ) and len(dif)!=0):
-        score_1 = 1
-    else:
-        score_1 = 0
+total_point = 0
+score_1 = 0
+score_2 = 0
+score_3 = 0
+point1 = 0
+point2 = 0
+point3 = 0
+changeclass(dif)
+#print("list of quardrant: ",list_ofq)
+list_ofq.sort(key = lambda x: x[2])  
 
-    #score rule-2(wrong quadrant) 
-    # print("c_erroeQ1:",c_errorQ1)
-    # print("c_erroeQ2:",c_errorQ2)
-    # print("c_erroeQ3:",c_errorQ3)
-    # print("c_erroeQ4:",c_errorQ4)
+# print("sort: ",list_ofq)
+for i in range(0, len(list_ofq)):
+	print(list_ofq[i][0])
 
-    c_errorlist = [c_errorQ1,c_errorQ2,c_errorQ3,c_errorQ4]
-    c_error = max(c_errorlist)
+j = 5
+L=0
+for i in list_centroid:
+	c1,c2,name = i
+	c,_ = changestrtoint(c1,c2,name)
+	sort_list_centroid.append(c)
 
-    if(c_error==0):
-        score_2 = 2
-    elif(c_error<=2 and c_error!=0):
-        score_2 = 1
-    elif(c_error>=3 and c_error!=0):
-        score_2 = 0
-    print(point1,point2,point3)
-    print("1.Digit(1-12) =",score_1)
-    print("2.Digit in wrong quadrant =",score_2)
-    print("3.Arrangement and sequencing of the numbers =",score_3)
-    Image.fromarray(output).show()
+sort_list_centroid.sort(key = lambda x: x[2])  
+print("sort: ",sort_list_centroid)
+#start intercept point5
+Y = [5,6,7,8,9,10,11,12,1,2,3,4]
+sort_listofp = [listofp for _,listofp in sorted(zip(Y,listofp))]
+# add class in sort_listofp 
+for k in range(0, len(sort_listofp)):
+	# print (k)
+	result = [[m, n, s,t,k+1] for m, n, s,t in sort_listofp]
+	boxofnum.append(result[k])
 
-    #reset
-    c_errorQ1=0
-    c_errorQ2=0
-    c_errorQ3=0
-    c_errorQ4=0
+print(boxofnum)
+# cv2.circle(output,(717, 881),1,0,20)
+# cv2.circle(output,(830, 443),1,0,10)
+# cv2.circle(output,(748, 301),1,0,15)
 
-    return score_1,score_2,score_3
+#[(710, 126), (639, 197), (530, 134), (556, 38), 1]
+
+idx = arraylist
+print(idx)
+for i in range(len(idx)):
+	print(idx)
+	sort_list_centroid.insert(int(idx[i])-1, (0,0,0))
+print("sort_list_centroid",sort_list_centroid)
+print(len(sort_list_centroid))
+cen=[]
+#for i in range(len(boxofnum)):
+for j in range (len(boxofnum)):
+	a,b = sort_list_centroid[j][:2]
+	print("centriod:",sort_list_centroid[j][2])
+	boolean,classnum = checkpoint(boxofnum,sort_list_centroid[j][:2],sort_list_centroid[j][2])
+	print(boolean)
+	list_boolean.append(boolean)
+	cv2.putText(output,str(boolean), (int(a),int(b)), font, 1, (116, 7, 97), 2, cv2.LINE_AA)
+# while(True):
+
+
+	
+# for i in range(len(boxofnum)):
+# 	for j in range(len(sort_list_centroid)):
+# 		print(len(sort_list_centroid))
+# 		print("i=",i," j=",j) 
+# 		a,b = sort_list_centroid[j][:2]
+# 		print(a,b,sort_list_centroid[j][2])
+# 		boolean,classnum = checkpoint(boxofnum[i][:4],sort_list_centroid[j][:2],sort_list_centroid[j][2])
+# 		if(boolean==True):
+# 			sort_list_centroid.remove(sort_list_centroid[j])	
+# 		print(sort_list_centroid)
+# for i in range(len(boxofnum)):
+# 	for j in range(len(sort_list_centroid)):
+# 		a, b = sort_list_centroid[j][:2]		
+# 		print("a,b:",a,b)
+# 		print(j,"--------------")
+# 		print(sort_list_centroid[j])
+# 		print(boxofnum[i][4])
+# 		boolean,classnum = checkpoint(boxofnum[i][:4],sort_list_centroid[j][:2],sort_list_centroid[j][2])
+# 		if(boolean==True):
+# 			sort_list_centroid.remove(sort_list_centroid[j])	
+# 			num = (int(a),int(b)) , sort_list_centroid[j][2]
+# 			cen.append(num)
+# 			list_boolean.append(boolean)
+# 		print(sort_list_centroid)
+# 		cv2.circle(output,(int(a),int(b)), radius=0, color=(88, 89, 40), thickness=1)
+		#cen.append((int(a),int(b)))
+		#cv2.putText(output,str(boolean), (int(a),int(b)), font, 1, (116, 7, 97), 2, cv2.LINE_AA)
+		#list_boolean.append(boolean)
+#check out of area of num
+# print(list_boolean)
+# print(cen)
+# for i in range(len(list_boolean)):
+# 	cv2.putText(output,boolean[i], cen[i], font, 1, (116, 7, 97), 2, cv2.LINE_AA)
+t=[]
+print(list_boolean)
+for i in list_digit:
+	t.append(list_boolean[i-1])
+if False in t :
+	point3 = 0
+else:
+	point3 = 1
+
+#1.clockwise 2.arrange  3.located 1:yes 0:no
+#clockwise
+output,mes = check_clockwise(output,data_corr,x,y,r)
+if(mes=="clockwise"):
+	point1 = 1
+	point2 = 1
+elif(mes=="anti-clockwise"):
+	point1 = 0
+	point2 = 1
+elif(mes=="other form arrange"):
+	point1 = 0
+	point2 = 0
+
+
+total_point = point1+point2+point3
+if (total_point==3):
+	score_3 = 2
+elif (total_point==0):
+	score_3 = 0
+else:
+	score_3 = 1
+
+#test
+#dif = ['1','2','3','6']
+#score rule-1(1-12 on clock) 
+if(len(dif)<=1):
+	score_1 = 2
+elif((len(dif)>=2 and len(dif)<=3 ) and len(dif)!=0):
+	score_1 = 1
+else:
+	score_1 = 0
+
+#score rule-2(wrong quadrant) 
+# print("c_erroeQ1:",c_errorQ1)
+# print("c_erroeQ2:",c_errorQ2)
+# print("c_erroeQ3:",c_errorQ3)
+# print("c_erroeQ4:",c_errorQ4)
+
+c_errorlist = [c_errorQ1,c_errorQ2,c_errorQ3,c_errorQ4]
+c_error = max(c_errorlist)
+
+if(c_error==0):
+	score_2 = 2
+elif(c_error<=2 and c_error!=0):
+	score_2 = 1
+elif(c_error>=3 and c_error!=0):
+	score_2 = 0
+print(point1,point2,point3)
+print("1.Digit(1-12) =",score_1)
+print("2.Digit in wrong quadrant =",score_2)
+print("3.Arrangement and sequencing of the numbers =",score_3)
+Image.fromarray(output).show()
+
+#reset
+c_errorQ1=0
+c_errorQ2=0
+c_errorQ3=0
+c_errorQ4=0
+
+    # return score_1,score_2,score_3
 
 
 
+# score_num('test2')

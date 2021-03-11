@@ -18,7 +18,7 @@ from object_detection.protos import eval_pb2
 
 # Name of the directory containing the object detection module we're using
 MODEL_NAME = 'inference_graph'
-IMAGE_NAME = 'num1.jpg'
+IMAGE_NAME = 'test2.jpg'
 DETECT_FOLDER = 'detectcircle'
 IMAGE_FOLDER = 'image_test'
 
@@ -87,7 +87,7 @@ def detection():
         feed_dict={image_tensor: image_expanded})
 
     # Draw the results of the detection (aka 'visulaize the results')
-
+    
     vis_util.visualize_boxes_and_labels_on_image_array(
         image,
         np.squeeze(boxes),
@@ -118,6 +118,7 @@ def detection():
         f.write('\n')
     output = image.copy()
     cv2.imshow('Object detector', output)
+    Image.fromarray(output).show()
 
 
     # Press any key to close the image

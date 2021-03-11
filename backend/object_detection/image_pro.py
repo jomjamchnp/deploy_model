@@ -25,16 +25,6 @@ def diff_img(name):
 	ID_NAME = name
 	FILE = '.jpg'
 	IMAGE_FOLDER = 'image_test'
-	CWD_PATH = os.getcwd()
-	KEY = os.path.join(CWD_PATH,"psychopaint-app-firebase-adminsdk-jcnly-c9ee2ded1d.json")
-		####DATABASE
-	cred = credentials.Certificate(KEY)
-		# firebase_admin.initialize_app(cred, {
-		# 	'databaseURL': 'https://psychopaint-app.firebaseio.com'
-		# })
-	firebase = firebase.FirebaseApplication('https://psychopaint-app.firebaseio.com', None)
-	url_num = firebase.get('/CDT/'+ID_NAME+'/drawing_info/number/url','')
-	url_total = firebase.get('/CDT/'+ID_NAME+'/drawing_info/hand/url','')
 	#Path JSON firebase
 
 
@@ -49,4 +39,18 @@ def diff_img(name):
 	cv2.imwrite(os.path.join(IMAGE_FOLDER,ID_NAME+'_num.jpg'),img_num)
 	print(os.path.join(IMAGE_FOLDER,ID_NAME))
 	cv2.waitKey(0)
-# diff_img()
+
+
+
+ID_NAME = '_vgh42ixnj'
+CWD_PATH = os.getcwd()
+KEY = os.path.join(CWD_PATH,"psychopaint-app-firebase-adminsdk-jcnly-c9ee2ded1d.json")
+	####DATABASE
+cred = credentials.Certificate(KEY)
+	# firebase_admin.initialize_app(cred, {
+	# 	'databaseURL': 'https://psychopaint-app.firebaseio.com'
+	# })
+firebase = firebase.FirebaseApplication('https://psychopaint-app.firebaseio.com', None)
+url_num = firebase.get('/CDT/'+ID_NAME+'/drawing_info/number/url','')
+url_total = firebase.get('/CDT/'+ID_NAME+'/drawing_info/hand/url','')
+diff_img(ID_NAME)
