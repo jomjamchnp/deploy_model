@@ -455,7 +455,7 @@ def checklist(temp):
 	return com,list_ 
 
 def changeclass(dif):
-    arraylist = []
+    global arraylist
     my_array = np.array(dif)
     print (len(my_array))
     # print (my_array[0])
