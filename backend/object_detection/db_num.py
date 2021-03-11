@@ -123,7 +123,7 @@ def num_detection(name):
         category_index,
         use_normalized_coordinates=True,
         line_thickness=8,
-        min_score_thresh=0.60)
+        min_score_thresh=0.7)
 
     coordinates = vis_util.return_coordinates(
             image,
@@ -133,7 +133,7 @@ def num_detection(name):
             category_index,
             use_normalized_coordinates=True,
             line_thickness=8,
-            min_score_thresh=0.50)
+            min_score_thresh=0.7)
 
     for coordinate in coordinates:
                 print(coordinate)
@@ -180,3 +180,4 @@ def num_detection(name):
 
     # Clean up
     cv2.destroyAllWindows()
+num_detection('_vgh42ixnj')
