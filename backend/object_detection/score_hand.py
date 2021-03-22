@@ -309,9 +309,6 @@ def arrownohead(xmin,ymin,lenx,leny,data_corr,rec):
     #Image.fromarray(roi).show()
     x1,y1,x2,y2 = detect_line(roi,data_corr)
     distance = math.sqrt( ((x1-x2)**2)+((y1-y2)**2))
-    # cv2.circle(rec,(x1+xmin,y1+ymin),1,(72, 45, 238),5)
-    # cv2.circle(rec,(x2+xmin,y2+ymin),1,(72, 45, 238),5)
-    #Image.fromarray(rec).show()
     print(distance,x1,y1,x2,y2)
     return distance,x1,y1,x2,y2
 
@@ -497,156 +494,25 @@ def check_arrowdegree(x1,y1,data_num,h,k,r,m,x2,y2):#x,y,data_num,h,k,r,m,newX,n
     x4,y4 = draw(x1,y1,dist,-get_angle)
     point_1,point_2,check = clockwise(data_num,x1,y1,r,get_angle)
     if(check==1):
-        ang_11andhand = getAngle(point_1,(x1, y1),(x2,y2))
-        ang_11andnext = getAngle((x2,y2),(x1, y1),point_2)
+        theta1 = getAngle(point_1,(x1, y1),point_2)
+        theta2 = getAngle(point_1,(x1, y1),(x2,y2))
 
-        print("ss",ang_11andhand,ang_11andnext) 
-        if(ang_11andhand<ang_11andnext):
+        print("ss",theta1,theta2) 
+        if(theta2<(0.5)*theta1):
             ch_eleven = 1
             print("correct")
         else:
             ch_eleven = 0
-    x5,y5 = draw(x1,y1,dist,-ang_11andhand)
-    print(point_1)
-    cv2.line(output,(x1,y1),(int(point_1[0]),int(point_1[1])),(0, 9, 69),2)
+    # x5,y5 = draw(x1,y1,dist,-theta1)
+    # print(point_1)
+    # cv2.line(output,(x1,y1),(int(point_1[0]),int(point_1[1])),(0, 9, 69),2)
+    cv2.circle(output,(int(point_1[0]),int(point_1[1])),3,(126, 236, 80 ),5)
 
-    x6,y6 = draw(x1,y1,dist,-ang_11andnext)
-    cv2.line(output,(x1,y1),(int(point_2[0]),int(point_2[1])),(102, 198, 42 ),2)
+    # x6,y6 = draw(x1,y1,dist,-theta2)
+    # cv2.line(output,(x1,y1),(int(point_2[0]),int(point_2[1])),(102, 198, 42 ),2)
+    cv2.circle(output,(int(point_2[0]),int(point_2[1])),3,(126, 236, 80 ),5)
 
     cv2.line(output,(x1,y1),(int(x4),int(y4)),(120, 156, 237 ),2)
-    
-    # m = slope(x1,y1,x2,y2)
-    # for i in range(0,60):
-    #     #cv2.circle(output, (x2,y2),2, (0, 128, 255), 20)
-    #     dist = math.sqrt((x1 - h)**2 + (y1 - k)**2)
-    #     #cv2.line(output,(h,k),int(h+dist,k+dist),(255,123,45),2)
-    #     x2,y2 = draw(x1,y1,abs(r-dist),an)
-    #     #cv2.line(output,(x1,y1),(int(x2),int(y2)),(255,123,45),2)
-    #     cv2.circle(output,(int(x2),int(y2)),2, (0, 128, 255), 10)
-    #     an=an+6
-    # for i in range(0,60):
-
-    #     #m = slope(xhead,yhead,xtail,ytail)
-    #     while(math.pow((x2-h),2) + math.pow((y2-k),2) <= math.pow((r),2)):
-    #         c = x1-((m)*y1)
-    #         newX+=i         
-    #         newY = y2-(m*(x2 - newX))
-    #         cv2.line(output,(int(x2),int(y2)),(int(newX),int(newY)),(223, 222, 39 ),2)
-    #         status,number=inArea((int(newX),int(newY)),data_num)
-    #         if(status):
-    #             print("number:",number)
-    #             break
-    #          x2,y2 = draw(x,y,r,i)
-    # #print(status,number,typehand)
-    #     #x2,y2 = draw(x1,y1,r,an)
-            
-    #     #cv2.line(output,(x1,y1),(int(x2),int(y2)),(255,123,45),(1))
-    #     an=an-5
-        
-	# check each line
-    #     x2,y2 = draw(x,y,r,an)
-    #     cv2.line(output,(x1,y1),(int(x2),int(y2)),(255,123,45),(1))
-    #     getSlope = slope(x1,y1,x2,y2)
-    #     c1 = y1-(getSlope*x1)
-    #     a,b = x1,x2
-    #     c,d = y1,y2
-    #     if (x1 < x2):
-    #         a = x1
-    #         b = x2
-    #     elif (x > x2):
-    #         a = x2
-    #         b = x1
-    #     if (y < y2):
-    #         c = y1
-    #         d = y2
-    #     elif (y > y2):
-    #         c = y2
-    #         d = y1
-        
-    #     num_in_line = []
-    # # check each point 90 and 270
-    #     if an == 90 or an == 270:
-    #         for i in range(int(c),int(d)):
-    #             newX = (i - c1)/getSlope
-    #             status,num = inArea((int(newX),i),data_num)
-    #             # cv2.circle(output, (int(newX),i),2, (0, 128, 255), 2)
-    #             if (status):
-    #                 if (len(num_in_line) == 0):
-    #                     num_in_line.append(num)
-    #                 else:
-    #                     if (num != num_in_line[len(num_in_line)-1]):
-    #                         num_in_line.append(num)
-    #     else:
-    #         for i in range(int(a),int(b)):
-    #             newY = (getSlope*i)+ c1
-    #             status,num = inArea((i,int(newY)),data_num)
-    #             # cv2.circle(output, (i,int(newY)),2, (0, 128, 255), 2)
-    #             if (status):
-    #                 if (len(num_in_line) == 0):
-    #                     num_in_line.append(num)
-    #                 else:
-    #                     if (num != num_in_line[len(num_in_line)-1]):
-    #                         num_in_line.append(num)
-    #     if len(num_in_line) != 0:
-    #         number_list.append(num_in_line)
-    #     an = an+6
-    #     break
-    #for i in range(0,60):
-    # check each line
-        # while (math.pow((i-x),2) + math.pow((newY-y),2) <= math.pow((r),2)):
-        # x2,y2 = draw(x,y,r,an)
-        # cv2.line(output,(x,y),(int(x2),int(y2)),(235, 181, 206),(1))
-        # c1 = y1-(m*x1)
-        # num_in_line = []
-        # newY = (m*i)+ c1
-        # status,num = inArea((i,int(newY)),data_num)
-        # # cv2.circle(output, (i,int(newY)),2, (0, 128, 255), 2)
-        # if (status):
-        #     if (len(num_in_line) == 0):
-        #         num_in_line.append(num)
-        #     else:
-        #         if (num != num_in_line[len(num_in_line)-1]):
-        #             num_in_line.append(num)
-        # an = an-6
-    # # check each point 90 and 270
-    #     if an == 90 or an == 270:
-    #         for i in range(int(c),int(d)):
-    #             newX = (i - c1)/getSlope
-    #             status,num = inArea((int(newX),i),data)
-    #             # cv2.circle(output, (int(newX),i),2, (0, 128, 255), 2)
-    #             if (status):
-    #                 if (len(num_in_line) == 0):
-    #                     num_in_line.append(num)
-    #                 else:
-    #                     if (num != num_in_line[len(num_in_line)-1]):
-    #                         num_in_line.append(num)
-    #     else:
-        # for i in range(int(a),int(b)):
-
-        # if len(num_in_line) != 0:
-        #     number_list.append(num_in_line)
-        #an = an+6
-    # num_in_line=[]
-    # i=-1
-    # for i in range(int(a),int(b)):
-	# 			newY = (m*i)+ c1
-	# 			status,num = inArea((i,int(newY)),data)
-	# 			# cv2.circle(output, (i,int(newY)),2, (0, 128, 255), 2)
-	# 			if (status):
-	# 				if (len(num_in_line) == 11):
-	# 					num_in_line.append(num)
-	# 				else:
-	# 					if (num != num_in_line[len(num_in_line)-1]):
-	# 						num_in_line.append(num)
-    # for i in range(15,385,15):
-    #     x2,y2 = draw(h,k,r,i)
-    #     xend = int(x2)
-    #     yend = int(y2) 
-    #     cv2.line(output,(x,y),(xend,yend),(235, 181, 206),3)
-    #     status,number=inArea((int(xend),int(yend)),data_num)
-    #     if(status==True):
-    #         break
-        
     Image.fromarray(output).show()
     return ch_eleven
         #line_list.append((xend,yend))
@@ -712,6 +578,3 @@ print("4.have 2 hands: ",score_4)
 print("5.hands on correct digit:",score_5)
 Image.fromarray(rec).show()
 cv2.imwrite(os.path.join(IMAGE_FOLDER,ID_NAME+'frame.jpg'),rec)
-    # return score_4,score_5
-
-# score_hand('_vgh42ixnj')
