@@ -132,4 +132,5 @@ def hand_detection(name):
     cv2.waitKey(0)
     # Clean up
     cv2.destroyAllWindows()
- 
+
+hand_detection('_vgh42ixnj')
