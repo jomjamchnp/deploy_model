@@ -14,3 +14,5 @@ setup(
     packages=[p for p in find_packages() if p.startswith('object_detection')],
     description='Tensorflow Object Detection Library',
 )
+
+# set PYTHONPATH=C:\Users\ACER\Desktop\deploy_model\backend;C:\Users\ACER\Desktop\deploy_model\backend\object_detection;C:\Users\ACER\Desktop\deploy_model\backend\object_detection\slim
