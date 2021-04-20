@@ -36,8 +36,10 @@ import urllib.request
 sys.path.append("..")
 
 # Import utilites
-from backend.object_detection.utils import label_map_util
-from backend.object_detection.utils import visualization_utils as vis_util
+# from backend.object_detection.utils import label_map_util
+# from backend.object_detection.utils import visualization_utils as vis_util
+from object_detection.utils import label_map_util
+from object_detection.utils import visualization_utils as vis_util
 #from utils import eval_util as eval_utils
 from object_detection.utils import json_utils
 from object_detection.protos import eval_pb2
@@ -183,7 +185,7 @@ def num_detection(name,image):
         f.write('\n')
 
     #cv2.imshow('Object detector', output)
-    Image.fromarray(output).show()
+    # Image.fromarray(output).show()
 
     # Press any key to close the image
     cv2.waitKey(0)

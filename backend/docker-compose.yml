@@ -1,0 +1,7 @@
+version: '3.3'
+services:
+  cdt_model: 
+    image: babalacherp/cdt_model
+    build: .
+    command: nvidia-smi
+    runtime: nvidia

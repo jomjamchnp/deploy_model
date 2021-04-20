@@ -743,7 +743,7 @@ def score_num(NAME,image_number):
     print("1.Digit(1-12) =",score_1)
     print("2.Digit in wrong quadrant =",score_2)
     print("3.Arrangement and sequencing of the numbers =",score_3)
-    Image.fromarray(output).show()
+    # Image.fromarray(output).show()
 
     #reset
     c_errorQ1=0

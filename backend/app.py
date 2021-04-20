@@ -5,11 +5,16 @@ import sys
 sys.path.append('..')
 import numpy as np
 import cv2
-from backend.object_detection.db_num_1 import num_detection
-from backend.object_detection.score_num_1 import score_num
-from backend.object_detection.db_hand_1 import hand_detection
-from backend.object_detection.score_hand_1 import score_hand
-from backend.object_detection.image_pro import diff_img
+# from backend.object_detection.db_num_1 import num_detection
+# from backend.object_detection.score_num_1 import score_num
+# from backend.object_detection.db_hand_1 import hand_detection
+# from backend.object_detection.score_hand_1 import score_hand
+# from backend.object_detection.image_pro import diff_img
+from object_detection.db_num_1 import num_detection
+from object_detection.score_num_1 import score_num
+from object_detection.db_hand_1 import hand_detection
+from object_detection.score_hand_1 import score_hand
+from object_detection.image_pro import diff_img
 import pyrebase
 import urllib.request
 
@@ -73,4 +78,5 @@ def main():
   return jsonify(response)
 
 if __name__ == '__main__':
-    app.run()
+    port = int(os.environ.get('PORT',8000))
+    app.run(debug=True, host='0.0.0.0', port= port)

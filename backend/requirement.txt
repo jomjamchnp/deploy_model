@@ -1,0 +1,11 @@
+opencv-python
+numpy
+pillow
+tensorflow-gpu==1.15.0
+jsonify
+shapely
+pyrebase4
+matplotlib
+cython
+sympy
+flask
