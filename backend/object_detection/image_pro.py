@@ -21,11 +21,30 @@ def url_to_image(url):
 
 
 
-def diff_img(img_number,img_total):
-	# ID_NAME = name
-	# FILE = '.jpg'
-	# IMAGE_FOLDER = 'image_test'
-	# CWD_PATH = os.getcwd()
+def diff_img():
+	# name,img_number,img_total
+	#ID_NAME = name
+	FILE = '.PNG'
+	IMAGE_FOLDER = 'image_test'
+	CWD_PATH = os.getcwd()
+	CDT_PATH = 'CDT_rewrite'
+	folder = os.path.join(CWD_PATH,IMAGE_FOLDER,CDT_PATH)
+	id_folder = [name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))]
+	for i in range(len(id_folder)):
+		print(id_folder[i])
+		path = str(folder)+'\\'+str(id_folder[i])
+		img_total = cv2.imread(path+'\clock.png',0)
+		kernel = np.ones((3,3),np.uint8)
+		img_num = cv2.imread(path+'\\'+'num.png',0)
+		img_hands = cv2.absdiff(img_total, img_num)
+		opening = cv2.morphologyEx(img_hands, cv2.MORPH_OPEN, kernel)
+		img_last = cv2.bitwise_not(opening)
+		
+		#Image.fromarray(img_last).show()
+		cv2.imwrite((path+'\\'+str(id_folder[i]+'_hands.jpg')),img_last)
+		cv2.imwrite((path+'\\'+str(id_folder[i]+'_num.jpg')),img_num)
+
+	#print(os.path.join(CWD_PATH,IMAGE_FOLDER,NEXT_PATH))
 	# KEY = os.path.join(CWD_PATH,"psychopaint-app-firebase-adminsdk-jcnly-c9ee2ded1d.json")
 	# 	####DATABASE
 	# cred = credentials.Certificate(KEY)
@@ -41,12 +60,12 @@ def diff_img(img_number,img_total):
 	# img_total = url_to_image(url_total)
 	# img_num = url_to_image(url_num)
 
-	img_hands = cv2.absdiff(img_total, img_number)
-	img_last = cv2.bitwise_not(img_hands)
-	return img_last
+	# img_hands = cv2.absdiff(img_total, img_number)
+	# img_last = cv2.bitwise_not(img_hands)
+	#return img_last
 	# cv2.imshow('img_hands',img_last)
 	# cv2.imwrite(os.path.join(IMAGE_FOLDER,ID_NAME+'_hands.jpg'),img_last)
 	# cv2.imwrite(os.path.join(IMAGE_FOLDER,ID_NAME+'_num.jpg'),img_num)
 	# print(os.path.join(IMAGE_FOLDER,ID_NAME))
-	# cv2.waitKey(0)
-# diff_img()
+	#cv2.waitKey(0)
+diff_img()
