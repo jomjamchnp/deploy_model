@@ -512,12 +512,13 @@ IMAGE_NAME = 'test2'
 FILE = '.jpg'
 DETECT_FOLDER = 'detectcircle'
 IMAGE_FOLDER = 'image_test'
-
+CDT_REWRITE = 'image_test/CDT_rewrite'
 # Grab path to current working directory
 CWD_PATH = os.getcwd()
 PREVIOS_PATH = os.path.abspath(CWD_PATH+ "/../")
+
 # Path to image
-PATH_TO_IMAGE = os.path.join(IMAGE_FOLDER,IMAGE_NAME+FILE)
+PATH_TO_IMAGE = os.path.join(CDT_REWRITE,IMAGE_NAME+FILE)
 
 #load json file
 data_corr = []
@@ -743,6 +744,19 @@ print(point1,point2,point3)
 print("1.Digit(1-12) =",score_1)
 print("2.Digit in wrong quadrant =",score_2)
 print("3.Arrangement and sequencing of the numbers =",score_3)
+font = cv2.FONT_HERSHEY_SIMPLEX
+# org
+org = (50, 50)
+# fontScale
+fontScale = 1
+# Blue color in BGR
+color = (255, 0, 0)
+# Line thickness of 2 px
+thickness = 1
+all_score="1.Digit(1-12) ="+score_1
+# Using cv2.putText() method
+output = cv2.putText(output, all_score, org, font, 
+                   fontScale, color, thickness, cv2.LINE_AA)
 Image.fromarray(output).show()
 
 #reset

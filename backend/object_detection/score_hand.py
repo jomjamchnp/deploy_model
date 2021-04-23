@@ -497,7 +497,6 @@ def check_arrowdegree(x1,y1,data_num,h,k,r,m,x2,y2):#x,y,data_num,h,k,r,m,newX,n
         theta1 = getAngle(point_1,(x1, y1),point_2)
         theta2 = getAngle(point_1,(x1, y1),(x2,y2))
 
-        print("ss",theta1,theta2) 
         if(theta2<(0.5)*theta1):
             ch_eleven = 1
             print("correct")
