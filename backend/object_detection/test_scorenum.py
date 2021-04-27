@@ -17,6 +17,7 @@ from shapely.geometry.polygon import Polygon
 from math import sqrt
 import re
 import os
+from collections import defaultdict
 
 def intersec(x,y,b1,b2,c1,c2,r):
 	A = Point2D(x,y)
@@ -478,14 +479,15 @@ def changeclass(dif):
     # print("class-diff: ",arraylist)
 
 # Name of the directory containing the object detection module we're using
-# IMAGE_NAME = '0sqcyqojk'
+#IMAGE_NAME = '2aisvtplb'
 RES_FILE = '_scorenum.jpg'
 FILE = '_num.jpg'
 DETECT_FOLDER = 'detectcircle'
 IMAGE_FOLDER = 'image_test'
 RESULT_FOLDER = 'result\CDT_rewrite'
-ALL_RES = 'result\\all_scorenum'
+ALL_RES = 'result\\new_score'
 CDT_REWRITE = 'image_test\CDT_rewrite'
+IMAGE_WITHPREDICT = 'result\CDT_rewrite'
 IMAGETEST_FOLDER = 'image_test'
 
 # Grab path to current working directory
@@ -495,16 +497,16 @@ folder = os.path.join(CWD_PATH,IMAGETEST_FOLDER,'CDT_rewrite')
 id_folder = [name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))]
 font=cv2.FONT_ITALIC
 
-for i in range(51,len(id_folder)):
+for i in range(0,len(id_folder)):
 	try:
 		print(i,id_folder[i])
 		IMAGE_NAME = str(id_folder[i])
-		#IMAGE_NAME='rf0jbwbk9'
+		#IMAGE_NAME='2aisvtplb'
 		line_list = []
 		listofp = [] 
 		line=[]
 		name=[]
-		list=[]
+		listname=[]
 		list_digit=[]
 		list_centroid =[]
 		list_ofq =[]
@@ -517,13 +519,13 @@ for i in range(51,len(id_folder)):
 		c_errorQ3 = 0 
 		c_errorQ4 = 0 
 		# Path to image
-		PATH_TO_IMAGE = os.path.join(CDT_REWRITE,IMAGE_NAME,IMAGE_NAME+FILE)
-		print(PATH_TO_IMAGE)
+		PATH_TO_IMAGE = os.path.join(IMAGE_WITHPREDICT,IMAGE_NAME,IMAGE_NAME+FILE)
+		#print(PATH_TO_IMAGE)
 
 		#path to save result
 		PATH_TO_RESULT = os.path.join(RESULT_FOLDER,IMAGE_NAME,IMAGE_NAME+RES_FILE)
 		PATH_TO_ALLRESULT = os.path.join(ALL_RES,IMAGE_NAME+RES_FILE)
-		print(PATH_TO_RESULT)
+		#print(PATH_TO_RESULT)
 		#load json file
 		data_corr = []
 		data_circle = []
@@ -533,10 +535,31 @@ for i in range(51,len(id_folder)):
 			data_corr.append(p)
 		for p in data['circle']:
 			data_circle.append(p)
+		print("data_corr:",data_corr)
 
+		#get only num 
+		d = defaultdict(list)
+		for i in range(0, len(data_corr)):
+			num = data_corr[i][4]
+			name = data_corr[i][5][0].split(":")
+			d[name[0]].append(num)
+		res =  list(zip(d, map(max, d.values())))
+		list_index = []
+		for i in range(0,len(res)):
+			print(res[i][1])
+			idx = [x[4] for x in data_corr].index(res[i][1]) 
+			print(idx)
+			list_index.append(idx)
+		#get on high score
+		new_data_corr = []
+		for i in list_index:
+			print(i)
+			new_data_corr.append(data_corr[i])
+
+		print(new_data_corr)
+		print("new_data_corr:",new_data_corr)
 		x,y,r = data_circle
 		image = cv2.imread(PATH_TO_IMAGE)
-		print("image:",image)
 		output = image.copy()
 		num = r*(40/100)
 		in_r = r-int(num)
@@ -551,8 +574,6 @@ for i in range(51,len(id_folder)):
 
 		#print("line_list: ",line_list)
 		length = len(line_list)
-		#print("length of line list: ",length)
-
 		for b in range(length):
 			if (b==11):
 				p1,p2,p3,p4 = intersec(x,y,*(line_list[b]),*(line_list[0]),in_r)
@@ -565,15 +586,15 @@ for i in range(51,len(id_folder)):
 				listofp.append(pointcut)
 
 		#load coordinates from json file
-		for i in range(0, len(data_corr)):
-			line.append(data_corr[i])
+		for i in range(0, len(new_data_corr)):
+			line.append(new_data_corr[i])
 			ymin  = line[i][0]
 			ymax = line[i][1]
 			xmin = line[i][2]
 			xmax = line[i][3]
 			name = line[i][5][0].split(":")
-			print(name)
-			list.append(str(name[0]))
+			#print(name)
+			listname.append(str(name[0]))
 			p1 = quadrant(xmin,ymin,x,y)
 			p2 = quadrant(xmax,ymin,x,y)
 			p3 = quadrant(xmin,ymax,x,y)
@@ -585,17 +606,17 @@ for i in range(51,len(id_folder)):
 			cv2.circle(output, center=(int(j), int(k)), radius=3, color=(255, 0, 0), thickness=5)
 			check_quardrant(name[0],total,xmin)
 
-		match,dif = checklist(list)
+		match,dif = checklist(listname)
 		#print("match? : ",match)
-		print("diff= " ,dif) #คลาสที่ไม่มี 
-		for i in list:
+		#print("diff= " ,dif) #คลาสที่ไม่มี 
+		for i in listname:
 			print(i)
 			digit = checkNumberClass(i)
 			list_digit.append(digit)
 
 
 		list_digit.sort()
-		print("list_digit:",list_digit)
+		#print("list_digit:",list_digit)
 
 		total_point = 0
 		score_1 = 0
@@ -620,7 +641,7 @@ for i in range(51,len(id_folder)):
 			sort_list_centroid.append(c)
 
 		sort_list_centroid.sort(key = lambda x: x[2])  
-		print("sort_list_centroid(1): ",sort_list_centroid)
+		#print("sort_list_centroid(1): ",sort_list_centroid)
 		#start intercept point5
 		Y = [5,6,7,8,9,10,11,12,1,2,3,4]
 		sort_listofp = [listofp for _,listofp in sorted(zip(Y,listofp))]
@@ -629,8 +650,8 @@ for i in range(51,len(id_folder)):
 			result = [[m, n, s,t,k+1] for m, n, s,t in sort_listofp]
 			boxofnum.append(result[k])
 
-		print("boxofnum:",boxofnum)
-		print("sort_list_centroid(2)",sort_list_centroid)
+		#print("boxofnum:",boxofnum)
+		#print("sort_list_centroid(2)",sort_list_centroid)
 		cen=[]
 		item=[]
 		if(len(boxofnum)>=len(sort_list_centroid)):
@@ -661,7 +682,7 @@ for i in range(51,len(id_folder)):
 
 		#1.clockwise 2.arrange  3.located 1:yes 0:no
 		#clockwise
-		output,mes = check_clockwise(output,data_corr,x,y,r)
+		output,mes = check_clockwise(output,new_data_corr,x,y,r)
 		if(mes=="clockwise"):
 			point1 = 1
 			point2 = 1

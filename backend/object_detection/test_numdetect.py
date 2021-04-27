@@ -84,12 +84,15 @@ def detection():
             use_normalized_coordinates=True,
             line_thickness=8,
             min_score_thresh=0.7)
-
+    print(coordinates.length)
+    
     for coordinate in coordinates:
-                print(coordinate)
+                #print(coordinate)
                 #ymin,ymax,xmin,xmax
                 (y1, y2, x1, x2, accuracy, classification) = coordinate
+                print(accuracy)
 
+    print(coordinates)
 
     output = image.copy()
     gray = cv2.cvtColor(output, cv2.COLOR_BGR2GRAY)
@@ -157,8 +160,9 @@ folder = os.path.join(CWD_PATH,IMAGETEST_FOLDER,CDT_PATH)
 id_folder = [name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))]
 
 for i in range(len(id_folder)):
-    print(id_folder[i])
+    #print(id_folder[i])
     ID = str(id_folder[i])
+    #ID = '2aisvtplb'
     IMAGE_NAME = ID+'_num.jpg'
     IMAGE_FOLDER = 'image_test\CDT_rewrite\\'+ ID
     PATH_TO_IMAGE = os.path.join(CWD_PATH,IMAGE_FOLDER,IMAGE_NAME)
@@ -170,6 +174,7 @@ for i in range(len(id_folder)):
     except OSError as error: 
         print(error)  
     detection()
+    break
 
 
 # Name of the directory containing the object detection module we're using
