@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 import sys
 import json
-
+from collections import defaultdict
 # This is needed since the notebook is stored in the object_detection folder.
 sys.path.append("..")
 
@@ -16,32 +16,7 @@ from utils import visualization_utils as vis_util
 from object_detection.utils import json_utils
 from object_detection.protos import eval_pb2
 
-# # Name of the directory containing the object detection module we're using
-# MODEL_NAME = 'inference_graph'
-# IMAGE_NAME = 'hand1.jpg'
-# DETECT_FOLDER = 'detectcircle'
-# IMAGE_FOLDER = 'image_test'
-
-
-# # Grab path to current working directory
-# CWD_PATH = os.getcwd()
-# print(CWD_PATH)
-# # Path to frozen detection graph .pb file, which contains the model that is used
-# # for object detection.
-# PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,'frozen_inference_graph.pb')
-
-# # Path to label map file
-# PATH_TO_LABELS = os.path.join(CWD_PATH,'training','labelmap.pbtxt')
-
-# # Path to image
-# PATH_TO_IMAGE = os.path.join(CWD_PATH,IMAGE_FOLDER,IMAGE_NAME)
-
-# # Number of classes the object detector can identify
-# NUM_CLASSES = 2
-
-
 def detection():
-
     label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
     categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
     category_index = label_map_util.create_category_index(categories)
@@ -112,7 +87,7 @@ def detection():
             print(coordinate)
                 #ymin,ymax,xmin,xmax
             (y1, y2, x1, x2, accuracy, classification) = coordinate
-
+        
     with open(os.path.join(CWD_PATH,"json_hand/CDT_rewrite/"+"script_"+IMAGE_NAME.split(".")[0]+".json"), "w",encoding='utf-8') as f:
         json.dump(coordinates, f,ensure_ascii=False, indent=4)
         f.write('\n')
@@ -133,20 +108,18 @@ def detection():
 
 # Grab path to current working directory
 CWD_PATH = os.getcwd()
-print(CWD_PATH)
 
 #loop test all image
 IMAGETEST_FOLDER = 'image_test'
 CDT_PATH = 'CDT_rewrite'
 # Name of the directory containing the object detection module we're using
 MODEL_NAME = 'inference_graph'
-DETECT_FOLDER = 'detectcircle'
 CDT_Rewrite = 'result\CDT_rewrite\\'
 ALL_HANDS = 'result\\allhands\\'
 # Path to frozen detection graph .pb file, which contains the model that is used
 # for object detection.
 PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,'frozen_inference_graph.pb')
-
+print(PATH_TO_CKPT)
 # Path to label map file
 PATH_TO_LABELS = os.path.join(CWD_PATH,'training','labelmap.pbtxt')
 
@@ -155,16 +128,16 @@ PATH_TO_LABELS = os.path.join(CWD_PATH,'training','labelmap.pbtxt')
 NUM_CLASSES = 2
 
 folder = os.path.join(CWD_PATH,IMAGETEST_FOLDER,CDT_PATH)
-id_folder = [name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))]
-
+#id_folder = [name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))]
+id_folder = ['test1','test3','test4','test6','test8','test10','test11']
 for i in range(len(id_folder)):
-    print(id_folder[i])
-    ID = str(id_folder[i])
+    #print(id_folder[i])
+    ID = id_folder[i]
     IMAGE_NAME = ID+'_hands.jpg'
-    IMAGE_FOLDER = 'image_test\CDT_rewrite\\'+ ID
+    IMAGE_FOLDER = 'image_test\\new\\dplit\\'
     PATH_TO_IMAGE = os.path.join(CWD_PATH,IMAGE_FOLDER,IMAGE_NAME)
-    RESULT_FOLDER = 'result\CDT_rewrite\\'+ ID
+    RESULT_FOLDER = 'result\CDT_rewrite\\new\\'+ ID
     ALL = os.path.join(CWD_PATH,ALL_HANDS,IMAGE_NAME)
-    PATH_TO_RESULT = os.path.join(CWD_PATH,CDT_Rewrite,ID,IMAGE_NAME)
+    PATH_TO_RESULT = os.path.join(CWD_PATH,'result\\new',IMAGE_NAME)
     detection()
 

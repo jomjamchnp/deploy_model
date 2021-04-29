@@ -16,7 +16,7 @@ from utils import visualization_utils as vis_util
 #from utils import eval_util as eval_utils
 from object_detection.utils import json_utils
 from object_detection.protos import eval_pb2
-
+from collections import defaultdict
 def detection():
 
     label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
@@ -73,7 +73,7 @@ def detection():
         category_index,
         use_normalized_coordinates=True,
         line_thickness=8,
-        min_score_thresh=0.7)
+        min_score_thresh=0.3)
 
     coordinates = vis_util.return_coordinates(
             image,
@@ -83,20 +83,34 @@ def detection():
             category_index,
             use_normalized_coordinates=True,
             line_thickness=8,
-            min_score_thresh=0.7)
-    print(coordinates.length)
+            min_score_thresh=0.3)
+
     
     for coordinate in coordinates:
                 #print(coordinate)
                 #ymin,ymax,xmin,xmax
                 (y1, y2, x1, x2, accuracy, classification) = coordinate
-                print(accuracy)
+                #print(accuracy)
 
-    print(coordinates)
-
+    #get only high score
+    new_data = []
+    f = defaultdict(list)
+    for i in range(0, len(coordinates)):
+        num = coordinates[i][4]
+        name = coordinates[i][5][0].split(":")
+        f[name[0]].append(num)
+    res =  list(zip(f, map(max, f.values())))
+    list_index_hands = []
+    for i in range(0,len(res)):
+        idx = [x[4] for x in coordinates].index(res[i][1]) 
+        list_index_hands.append(idx)
+    new_data = []
+    for i in list_index_hands:
+        new_data.append(coordinates[i])
+    
     output = image.copy()
     gray = cv2.cvtColor(output, cv2.COLOR_BGR2GRAY)
-    circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 100)
+    circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 120)
 
     circle_data = []
 
@@ -119,14 +133,14 @@ def detection():
 
     with open(os.path.join(CWD_PATH,"json_num/CDT_rewrite/"+"script_"+IMAGE_NAME.split(".")[0]+".json"), "w",encoding='utf-8') as f:
         data = {
-            'coordinate' : coordinates,
+            'coordinate' : new_data,
             'circle' : circle_data
         }
         json.dump(data, f,ensure_ascii=False)
         f.write('\n')
         
-    #Image.fromarray(output).show()
-    #cv2.imwrite(PATH_TO_RESULT,output)
+    Image.fromarray(output).show()
+    cv2.imwrite(PATH_TO_RESULT,output)
 
     # Press any key to close the image
     cv2.waitKey(0)
@@ -142,8 +156,7 @@ IMAGETEST_FOLDER = 'image_test'
 CDT_PATH = 'CDT_rewrite'
 # Name of the directory containing the object detection module we're using
 MODEL_NAME = 'inference_graph'
-DETECT_FOLDER = 'detectcircle'
-CDT_Rewrite = 'result\CDT_rewrite\\'
+CDT_Rewrite = 'result\CDT_rewrite\\new'
 
 # Path to frozen detection graph .pb file, which contains the model that is used
 # for object detection.
@@ -161,14 +174,16 @@ id_folder = [name for name in os.listdir(folder) if os.path.isdir(os.path.join(f
 
 for i in range(len(id_folder)):
     #print(id_folder[i])
-    ID = str(id_folder[i])
-    #ID = '2aisvtplb'
-    IMAGE_NAME = ID+'_num.jpg'
-    IMAGE_FOLDER = 'image_test\CDT_rewrite\\'+ ID
+    #ID = str(id_folder[i])
+    ID = 'test11'
+    #IMAGE_NAME = ID+'_num.jpg'
+    IMAGE_NAME = ID+'.png'
+    IMAGE_FOLDER = 'image_test\\new\\'
     PATH_TO_IMAGE = os.path.join(CWD_PATH,IMAGE_FOLDER,IMAGE_NAME)
-    RESULT_FOLDER = 'result\CDT_rewrite\\'+ ID
+    print(PATH_TO_IMAGE)
+    RESULT_FOLDER = 'result\CDT_rewrite\\new\\'+ ID
     CREATE = os.path.join(CWD_PATH,CDT_Rewrite,ID)
-    PATH_TO_RESULT = os.path.join(CWD_PATH,CDT_Rewrite,ID,IMAGE_NAME)
+    PATH_TO_RESULT = os.path.join(CWD_PATH,'result\\new',IMAGE_NAME)
     try: 
         os.mkdir(CREATE)
     except OSError as error: 

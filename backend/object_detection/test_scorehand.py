@@ -40,7 +40,7 @@ def detect_line(roi,data):
     return x1,y1,x2,y2
 
 def checkcrash(data_num,x1,y1,x2,y2,typehand,h,k,r):
-
+    rec = original_img
     list_crash = []
     list_status= []
     list_distance = []
@@ -544,6 +544,7 @@ IMAGE_FOLDER = 'image_test'
 RESULT_FOLDER = 'result\CDT_rewrite'
 ALL_RES = 'result\\new_scorehands'
 CDT_REWRITE = 'image_test\CDT_rewrite'
+NEW_PATH = 'image_test\\new\\dplit'
 IMAGE_WITHPREDICT = 'result\CDT_rewrite'
 IMAGETEST_FOLDER = 'image_test'
 
@@ -551,15 +552,16 @@ IMAGETEST_FOLDER = 'image_test'
 CWD_PATH = os.getcwd()
 PREVIOS_PATH = os.path.abspath(CWD_PATH+ "/../")
 folder = os.path.join(CWD_PATH,IMAGETEST_FOLDER,'CDT_rewrite')
-id_folder = [name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))]
+#id_folder = [name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))]
 font=cv2.FONT_ITALIC
-
+id_folder = ['test1','test3','test4','test6','test8','test10','test11']
 for i in range(0,len(id_folder)):
     try:
         #print(i,id_folder[i])
         IMAGE_NAME = str(id_folder[i])
         #IMAGE_NAME = '5tvgwkve7'
-        PATH_TO_IMAGE = os.path.join(CDT_REWRITE,IMAGE_NAME,IMAGE_NAME+FILE)
+        #PATH_TO_IMAGE = os.path.join(CDT_REWRITE,IMAGE_NAME,IMAGE_NAME+FILE)
+        PATH_TO_IMAGE = os.path.join(NEW_PATH,IMAGE_NAME+FILE)
         #path to save result
         PATH_TO_RESULT = os.path.join(RESULT_FOLDER,IMAGE_NAME,IMAGE_NAME+RES_FILE)
         PATH_TO_ALLRESULT = os.path.join(ALL_RES,IMAGE_NAME+RES_FILE)
@@ -568,50 +570,18 @@ for i in range(0,len(id_folder)):
         #read hand
         with open("json_hand/CDT_rewrite/script_"+IMAGE_NAME+"_hands.json") as f:
             data = json.load(f)
-        new_data = []
-        #get only high score of hands
-        f = defaultdict(list)
-        for i in range(0, len(data)):
-            num = data[i][4]
-            name = data[i][5][0].split(":")
-            f[name[0]].append(num)
-        res =  list(zip(f, map(max, f.values())))
-        list_index_hands = []
-        for i in range(0,len(res)):
-            idx = [x[4] for x in data].index(res[i][1]) 
-            list_index_hands.append(idx)
-        new_data = []
-        for i in list_index_hands:
-            new_data.append(data[i])
-
+        
         data_corr = []
         data_circle = []
 
         # read num from json
-        with open("json_num/CDT_rewrite/script_"+IMAGE_NAME+"_num.json") as f:
+        with open("json_num/CDT_rewrite/script_"+IMAGE_NAME+".json") as f:
             data2 = json.load(f)
         for p in data2['coordinate']:
             data_corr.append(p)
         for p in data2['circle']:
             data_circle.append(p)
-        #get only num 
-        d = defaultdict(list)
-        for i in range(0, len(data_corr)):
-            num = data_corr[i][4]
-            name = data_corr[i][5][0].split(":")
-            d[name[0]].append(num)
-        res =  list(zip(d, map(max, d.values())))
-        list_index = []
-        for i in range(0,len(res)):
-            idx = [x[4] for x in data_corr].index(res[i][1]) 
-            list_index.append(idx)
-        #get on high score
-        new_data_corr = []
-        for i in list_index:
-            new_data_corr.append(data_corr[i])
-
         #print(new_data_corr)
-        #print("new_data_corr:",new_data_corr)
         name=[]
         list_point=[] #list of coordinate no head [(x1,y2),(x2,y2)]
         list_centroid =[]
@@ -620,6 +590,7 @@ for i in range(0,len(id_folder)):
         minute_hand = 0
         output = image.copy()
         rec = image.copy()
+        original_img = cv2.imread(os.path.join('image_test\\new\\',IMAGE_NAME+'_clock.png'))
         font=cv2.FONT_ITALIC
         #data[0][0] = ymin , data[0][1]=ymax, data[0][2]=xmin, data[0][3]=xmax
         h,k,r = data_circle
@@ -628,7 +599,7 @@ for i in range(0,len(id_folder)):
         score_5 = 0
         
         box_hand,list_hands,score_4 = check_data(data,rec)
-        check_boxarrow(rec,box_hand,new_data_corr,h,k,r)
+        check_boxarrow(rec,box_hand,data_corr,h,k,r)
         #rule4    
 
         #rule5
@@ -654,19 +625,19 @@ for i in range(0,len(id_folder)):
         image_score = np.zeros((x,y,z ), np.uint8)
         image_score = cv2.putText(image_score, text_s4, (5, 50), font, fontScale, color, thickness, cv2.LINE_AA)
         image_score = cv2.putText(image_score, text_s5, (5, 100), font, fontScale, color, thickness, cv2.LINE_AA)
-        h_img = cv2.hconcat([output, image_score])
+        h_img = cv2.hconcat([original_img, image_score])
         #print(PATH_TO_RESULT)
         try:
             cv2.imwrite(PATH_TO_RESULT,h_img)
             cv2.imwrite(PATH_TO_ALLRESULT,h_img)
+            cv2.imwrite(PATH_TO_ALLRESULT+'frame.jpg',rec)
             print("save success!")
         except OSError as error:
             print(error)
-        #Image.fromarray(rec).show()
-        #cv2.imwrite(os.path.join(IMAGE_FOLDER,ID_NAME+'frame.jpg'),rec)
+        Image.fromarray(rec).show()
     except OSError as error:
             print(error)
-
+    
 # # Path to image
 # PATH_TO_IMAGE = os.path.join(IMAGE_FOLDER,IMAGE_NAME+FILE)
 # #Read image 

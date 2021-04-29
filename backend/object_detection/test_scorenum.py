@@ -170,7 +170,9 @@ def check_clockwise(image,data,x_center,y_center,radius):
 	output = image.copy()
 	line_list=[]
 	for i in data:
-		cv2.rectangle(output, (i[2], i[0]),(i[3], i[1]), (0, 255, 255), 2)
+		cv2.rectangle(output, (i[2], i[0]),(i[3], i[1]), (76, 179, 111), 5)
+		cv2.putText(output,str(i[5]),(i[3], i[1]), font, 0.8, (76, 179, 111), 2, cv2.LINE_AA)
+
 	x1,y1 = x_center,y_center
 	an = 0
 	print(x_center,y_center,radius)
@@ -487,7 +489,8 @@ IMAGE_FOLDER = 'image_test'
 RESULT_FOLDER = 'result\CDT_rewrite'
 ALL_RES = 'result\\new_score'
 CDT_REWRITE = 'image_test\CDT_rewrite'
-IMAGE_WITHPREDICT = 'result\CDT_rewrite'
+# IMAGE_WITHPREDICT = 'result\CDT_rewrite'
+IMAGE_WITHPREDICT = 'result\\new'
 IMAGETEST_FOLDER = 'image_test'
 
 # Grab path to current working directory
@@ -499,9 +502,9 @@ font=cv2.FONT_ITALIC
 
 for i in range(0,len(id_folder)):
 	try:
-		print(i,id_folder[i])
-		IMAGE_NAME = str(id_folder[i])
-		#IMAGE_NAME='2aisvtplb'
+		#print(i,id_folder[i])
+		#IMAGE_NAME = str(id_folder[i])
+		IMAGE_NAME='test11'
 		line_list = []
 		listofp = [] 
 		line=[]
@@ -519,45 +522,23 @@ for i in range(0,len(id_folder)):
 		c_errorQ3 = 0 
 		c_errorQ4 = 0 
 		# Path to image
-		PATH_TO_IMAGE = os.path.join(IMAGE_WITHPREDICT,IMAGE_NAME,IMAGE_NAME+FILE)
+		PATH_TO_IMAGE = os.path.join(IMAGE_WITHPREDICT,IMAGE_NAME+'.png')
 		#print(PATH_TO_IMAGE)
 
 		#path to save result
-		PATH_TO_RESULT = os.path.join(RESULT_FOLDER,IMAGE_NAME,IMAGE_NAME+RES_FILE)
+		PATH_TO_RESULT = os.path.join(RESULT_FOLDER,IMAGE_NAME+RES_FILE)
 		PATH_TO_ALLRESULT = os.path.join(ALL_RES,IMAGE_NAME+RES_FILE)
 		#print(PATH_TO_RESULT)
 		#load json file
-		data_corr = []
+		new_data_corr = []
 		data_circle = []
-		with open("json_num/CDT_rewrite/script_"+IMAGE_NAME+"_num.json") as f:
+		with open("json_num/CDT_rewrite/script_"+IMAGE_NAME+".json") as f:
 			data = json.load(f)
 		for p in data['coordinate']:
-			data_corr.append(p)
+			new_data_corr.append(p)
 		for p in data['circle']:
 			data_circle.append(p)
-		print("data_corr:",data_corr)
-
-		#get only num 
-		d = defaultdict(list)
-		for i in range(0, len(data_corr)):
-			num = data_corr[i][4]
-			name = data_corr[i][5][0].split(":")
-			d[name[0]].append(num)
-		res =  list(zip(d, map(max, d.values())))
-		list_index = []
-		for i in range(0,len(res)):
-			print(res[i][1])
-			idx = [x[4] for x in data_corr].index(res[i][1]) 
-			print(idx)
-			list_index.append(idx)
-		#get on high score
-		new_data_corr = []
-		for i in list_index:
-			print(i)
-			new_data_corr.append(data_corr[i])
-
-		print(new_data_corr)
-		print("new_data_corr:",new_data_corr)
+		print("data_corr:",new_data_corr)
 		x,y,r = data_circle
 		image = cv2.imread(PATH_TO_IMAGE)
 		output = image.copy()
@@ -569,7 +550,7 @@ for i in range(0,len(id_folder)):
 			x2,y2 = draw(x,y,r,i)
 			xend = int(x2)
 			yend = int(y2) 
-			cv2.line(output,(x,y),(xend,yend),(224, 45, 45),3)
+			cv2.line(output,(x,y),(xend,yend),(224, 45, 45),2)
 			line_list.append((xend,yend))
 
 		#print("line_list: ",line_list)
@@ -672,7 +653,8 @@ for i in range(0,len(id_folder)):
 			except OSError as error:
 				print(error)  
 				Image.fromarray(output).show()
-
+		print("list_boolean:",list_boolean)
+		
 		if False in list_boolean :
 			point3 = 0
 		if len(list_boolean) == 0:
@@ -716,6 +698,7 @@ for i in range(0,len(id_folder)):
 			score_1 = 0
 
 		c_errorlist = [c_errorQ1,c_errorQ2,c_errorQ3,c_errorQ4]
+		print("c_errorlist:",c_errorlist)
 		c_error = max(c_errorlist)
 
 		if(c_error==0):
@@ -755,7 +738,7 @@ for i in range(0,len(id_folder)):
 		except OSError as error:
 			print(error)
 
-		#Image.fromarray(h_img).show()
+		Image.fromarray(h_img).show()
 
 		#reset
 		c_errorQ1=0
@@ -765,7 +748,7 @@ for i in range(0,len(id_folder)):
 	except OSError as err:
 		print(err)
 	
-
+	break
     # return score_1,score_2,score_3
 
 
