@@ -154,7 +154,7 @@ def checkcrash(data_num,x1,y1,x2,y2,typehand,h,k,r):
         #Image.fromarray(output).show()
         ch_eleven = check_arrowdegree(x,y,data_num,h,k,r,m,newX,newY)
         #print(x,y,newX,newY)
-    print("last ",ch_eleven,ch_two)
+    print("last score ",ch_eleven,ch_two)
     return ch_eleven,ch_two
     
 def checkNumberClass(text):
@@ -214,7 +214,7 @@ def checkline(h,k,xhead,yhead,xtail,ytail,rec,data_num,r,typehand):
     global ch_eleven,ch_two
     newX = xhead
     newY = yhead
-    print("xhead,yhead,xtail,ytail:",xhead,yhead,xtail,ytail)
+    #print("xhead,yhead,xtail,ytail:",xhead,yhead,xtail,ytail)
     i= -1
     if(xhead>xtail):
         i=1
@@ -306,7 +306,7 @@ def detect_arrow(img):
     return distance,(p1,p2),center
 
 def check_boxarrow(rec,box_hand,data_num,h,k,r):
-    print(box_hand) #[('hour', (414, 380, 483, 466, 'arrow')), ('minute', (716, 420, 545, 463, 'arrow'))]
+    #print(box_hand) #[('hour', (414, 380, 483, 466, 'arrow')), ('minute', (716, 420, 545, 463, 'arrow'))]
     for i in range(0,len(box_hand)):
         print("box_hand:",box_hand[i][1][4])
         if(box_hand[i][1][4]=="arrow"):
@@ -319,7 +319,7 @@ def arrownohead(xmin,ymin,lenx,leny,data_corr,rec):
     #Image.fromarray(roi).show()
     x1,y1,x2,y2 = detect_line(roi,data_corr)
     distance = math.sqrt( ((x1-x2)**2)+((y1-y2)**2))
-    print(distance,x1,y1,x2,y2)
+    #print(distance,x1,y1,x2,y2)
     return distance,x1,y1,x2,y2
 
 def arrow(xmin,ymin,lenx,leny,data_corr,rec):
@@ -498,7 +498,7 @@ def check_arrowdegree(x1,y1,data_num,h,k,r,m,x2,y2):#x,y,data_num,h,k,r,m,newX,n
     for i in data_num:
          cv2.rectangle(output, (i[2], i[0]),(i[3], i[1]), (0, 255, 255), 2)
     #Image.fromarray(output).show()
-    print("--check_arrowdegree--")
+    #print("--check_arrowdegree--")
     cv2.line(output,(x1,y1),(x2,y2),(184,158,170),3)
     m = slope(x1,y1,x2,y2)
     newX = newX-1         
@@ -527,7 +527,7 @@ def check_arrowdegree(x1,y1,data_num,h,k,r,m,x2,y2):#x,y,data_num,h,k,r,m,newX,n
     # cv2.line(output,(x1,y1),(int(point_2[0]),int(point_2[1])),(102, 198, 42 ),2)
     #cv2.circle(output,(int(point_2[0]),int(point_2[1])),3,(126, 236, 80 ),5)
     #cv2.line(output,(x1,y1),(int(x4),int(y4)),(120, 156, 237 ),2)
-    Image.fromarray(output).show()
+    #Image.fromarray(output).show()
     return ch_eleven
         #line_list.append((xend,yend))
 
@@ -552,21 +552,22 @@ IMAGETEST_FOLDER = 'image_test'
 CWD_PATH = os.getcwd()
 PREVIOS_PATH = os.path.abspath(CWD_PATH+ "/../")
 folder = os.path.join(CWD_PATH,IMAGETEST_FOLDER,'CDT_rewrite')
-#id_folder = [name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))]
+id_folder = [name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))]
 font=cv2.FONT_ITALIC
-id_folder = ['test1','test3','test4','test6','test8','test10','test11']
-for i in range(0,len(id_folder)):
+#id_folder = ['test1','test3','test4','test6','test8','test10','test11']
+for i in range(8,len(id_folder)):
     try:
-        #print(i,id_folder[i])
+        print(i,id_folder[i])
         IMAGE_NAME = str(id_folder[i])
-        #IMAGE_NAME = '5tvgwkve7'
+        #IMAGE_NAME = 'e8vrbgb74'
         #PATH_TO_IMAGE = os.path.join(CDT_REWRITE,IMAGE_NAME,IMAGE_NAME+FILE)
-        PATH_TO_IMAGE = os.path.join(NEW_PATH,IMAGE_NAME+FILE)
+        PATH_TO_IMAGE = os.path.join(CDT_REWRITE,IMAGE_NAME,IMAGE_NAME+FILE)
         #path to save result
         PATH_TO_RESULT = os.path.join(RESULT_FOLDER,IMAGE_NAME,IMAGE_NAME+RES_FILE)
+        print("PATH_TO_RESULT:",PATH_TO_RESULT)
         PATH_TO_ALLRESULT = os.path.join(ALL_RES,IMAGE_NAME+RES_FILE)
         image = cv2.imread(PATH_TO_IMAGE)
-        
+        print("PATH_TO_ALLRESULT:",PATH_TO_ALLRESULT)
         #read hand
         with open("json_hand/CDT_rewrite/script_"+IMAGE_NAME+"_hands.json") as f:
             data = json.load(f)
@@ -575,7 +576,7 @@ for i in range(0,len(id_folder)):
         data_circle = []
 
         # read num from json
-        with open("json_num/CDT_rewrite/script_"+IMAGE_NAME+".json") as f:
+        with open("json_num/CDT_rewrite/script_"+IMAGE_NAME+"_num.json") as f:
             data2 = json.load(f)
         for p in data2['coordinate']:
             data_corr.append(p)
@@ -590,7 +591,7 @@ for i in range(0,len(id_folder)):
         minute_hand = 0
         output = image.copy()
         rec = image.copy()
-        original_img = cv2.imread(os.path.join('image_test\\new\\',IMAGE_NAME+'_clock.png'))
+        original_img = cv2.imread(os.path.join('image_test\\CDT_rewrite\\',IMAGE_NAME,'clock.png'))
         font=cv2.FONT_ITALIC
         #data[0][0] = ymin , data[0][1]=ymax, data[0][2]=xmin, data[0][3]=xmax
         h,k,r = data_circle
@@ -626,64 +627,15 @@ for i in range(0,len(id_folder)):
         image_score = cv2.putText(image_score, text_s4, (5, 50), font, fontScale, color, thickness, cv2.LINE_AA)
         image_score = cv2.putText(image_score, text_s5, (5, 100), font, fontScale, color, thickness, cv2.LINE_AA)
         h_img = cv2.hconcat([original_img, image_score])
-        #print(PATH_TO_RESULT)
+        #Image.fromarray(h_img).show()
         try:
             cv2.imwrite(PATH_TO_RESULT,h_img)
             cv2.imwrite(PATH_TO_ALLRESULT,h_img)
-            cv2.imwrite(PATH_TO_ALLRESULT+'frame.jpg',rec)
+            #cv2.imwrite(PATH_TO_ALLRESULT+'frame.jpg',rec)
             print("save success!")
         except OSError as error:
             print(error)
-        Image.fromarray(rec).show()
+        #Image.fromarray(rec).show()
     except OSError as error:
             print(error)
     
-# # Path to image
-# PATH_TO_IMAGE = os.path.join(IMAGE_FOLDER,IMAGE_NAME+FILE)
-# #Read image 
-# image = cv2.imread(PATH_TO_IMAGE)
-
-# #read hand
-# with open("json_hand/script"+IMAGE_NAME+".json") as f:
-#     data = json.load(f)
-
-# data_corr = []
-# data_circle = []
-# # read num from json
-# with open("json_num/script"+IMAGE_NAME+".json") as f:
-#     data2 = json.load(f)
-# for p in data2['coordinate']:
-#     data_corr.append(p)
-# for p in data2['circle']:
-#     data_circle.append(p)
-
-#load coordinates from json file
-# name=[]
-# list_point=[] #list of coordinate no head [(x1,y2),(x2,y2)]
-# list_centroid =[]
-# list_crashnum = []
-# hour_hand = 0
-# minute_hand = 0
-# output = image.copy()
-# rec = image.copy()
-# font=cv2.FONT_ITALIC
-# #data[0][0] = ymin , data[0][1]=ymax, data[0][2]=xmin, data[0][3]=xmax
-# h,k,r = data_circle
-# #score
-# score_4 = 0
-# score_5 = 0
-
-# box_hand,list_hands,score_4 = check_data(data,rec)
-# check_boxarrow(rec,box_hand,data_corr,h,k,r)
-# #rule4    
-
-# #rule5
-# if(ch_eleven==1):
-#     score_5 = score_5 + 1
-# if(ch_two==1):
-#     score_5 = score_5 + 1
-
-# print("4.have 2 hands: ",score_4)
-# print("5.hands on correct digit:",score_5)
-# Image.fromarray(rec).show()
-# cv2.imwrite(os.path.join(IMAGE_FOLDER,ID_NAME+'frame.jpg'),rec)
