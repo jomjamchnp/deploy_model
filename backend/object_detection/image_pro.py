@@ -30,7 +30,8 @@ def sum_img():
 	id_folder = [name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))]
 	#print(id_folder)
 	for i in range(0,len(id_folder)):
-		print(i,id_folder[i])
+		#id_folder[i]='bv1dn6w5b'
+		print(id_folder[i])
 		path = str(folder)+'\\'+str(id_folder[i])+'\\'+str(id_folder[i])
 		#print(path)
 		score_num = cv2.imread(path+'_scorenum.jpg')
@@ -43,7 +44,7 @@ def sum_img():
 		#Image.fromarray(total).show()
 		res = RESULT_PATH+str(id_folder[i])
 		cv2.imwrite(RESULT_PATH+'\\'+str(id_folder[i])+'_all.jpg',total)
-		
+					
 
 def diff_img():
 	# name,img_number,img_total
@@ -83,5 +84,5 @@ def diff_img():
 	# url_num = firebase.get('/CDT/'+ID_NAME+'/drawing_info/number/url','')
 	# url_total = firebase.get('/CDT/'+ID_NAME+'/drawing_info/hand/url','')
 
-diff_img()
-
+#diff_img()
+sum_img()

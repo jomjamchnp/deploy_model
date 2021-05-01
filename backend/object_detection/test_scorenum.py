@@ -408,7 +408,7 @@ def check_quardrant(name,total,xmin):
 
 def check_center(name,num,list_ofq):
 	global c_errorQ1,c_errorQ2,c_errorQ3,c_errorQ4
-	#print("num:",num)
+	print("num:",num)
 	if (num==1):
 		mes = name+" in quardrant 1"
 		_,n = changestrtoint(0,0,name)
@@ -506,7 +506,7 @@ for i in range(0,len(id_folder)):
 	try:
 		print(i,id_folder[i])
 		IMAGE_NAME = str(id_folder[i])
-		#IMAGE_NAME='e1ti4gx5u'
+		#IMAGE_NAME='eqlkqpi1d'
 		line_list = []
 		listofp = [] 
 		line=[]
@@ -745,7 +745,7 @@ for i in range(0,len(id_folder)):
 		except OSError as error:
 			print(error)
 
-		#Image.fromarray(h_img).show()
+		Image.fromarray(h_img).show()
 
 		#reset
 		c_errorQ1=0

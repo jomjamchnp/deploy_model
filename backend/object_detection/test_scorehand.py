@@ -19,7 +19,7 @@ from collections import defaultdict
 # ID_NAME = "_h9ezb07yl"
 
 def detect_line(roi,data):
-    #Image.fromarray(roi).show()
+    Image.fromarray(roi).show()
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray, 50, 200)
     rho = 1  # distance resolution in pixels of the Hough grid
@@ -28,7 +28,9 @@ def detect_line(roi,data):
     min_line_length = 10  # minimum number of pixels making up a line
     max_line_gap = 10  # maximum gap in pixels between connectable line segments
     line_image = np.copy(roi) * 0  # creating a blank to draw lines on
-    lines = cv2.HoughLinesP(edges, rho, theta, threshold, np.array([]),min_line_length, max_line_gap)
+    kernel = np.ones((5, 5), np.uint8)
+    dilate = cv2.dilate(edges, kernel, iterations=2)
+    lines = cv2.HoughLinesP(dilate, rho, theta, threshold, np.array([]),min_line_length, max_line_gap)
     #print(lines)
     points = []
     for x1,y1,x2,y2 in lines[0]:
@@ -36,11 +38,12 @@ def detect_line(roi,data):
     cv2.circle(line_image,(x1,y1),2,(249, 201, 251),10)   
     cv2.circle(line_image,(x2,y2),2,(249, 201, 251),10) 
     # show images
-    #Image.fromarray(line_image).show()
+    Image.fromarray(line_image).show()
     return x1,y1,x2,y2
 
 def checkcrash(data_num,x1,y1,x2,y2,typehand,h,k,r):
-    rec = original_img
+    #rec = original_img
+    
     list_crash = []
     list_status= []
     list_distance = []
@@ -137,10 +140,10 @@ def checkcrash(data_num,x1,y1,x2,y2,typehand,h,k,r):
 
     idx = list_distance.index(min(list_distance))
     x,y,newX,newY = list_crash[idx][0],list_crash[idx][1], list_crash[idx][2], list_crash[idx][3]
-    # cv2.circle(rec,(x,y),2,(205, 177, 82),2)
-    # cv2.circle(rec,(newX,newY),2,(84, 82, 205),2)
-    # cv2.line(output,(x,y),(newX,newY),(234, 44, 44 ),5)
-    #Image.fromarray(output).show()
+    cv2.circle(rec,(x,y),2,(205, 177, 82),2)
+    cv2.circle(rec,(newX,newY),2,(84, 82, 205),2)
+    cv2.line(output,(x,y),(newX,newY),(234, 44, 44 ),5)
+    Image.fromarray(output).show()
     print("crash?:",list_status[idx],list_num[idx],list_crash[idx][4])
     #cv2.line(rec,(x,y),(newX,newY),(255,123,45),3)  
     if(list_crash[idx][4]=="hour" and list_num[idx]==11):
@@ -296,7 +299,7 @@ def detect_arrow(img):
     for i in list_center:
         x,y = i
         distance = math.sqrt(((xmean-x)**2)+((ymean-y)**2) )
-        dist = int(distance)
+        dist = float(distance)
         max_corr.append((x,y))
         list_dist.append(dist)
     idx = list_dist.index(max(list_dist))
@@ -333,9 +336,12 @@ def check_data(data,img):
     list_hands = []
     box_arrow = []
     box_hand = []
+    print("data:",data," len:",len(data))
+    if(len(data)==1):
+        score_4 = 1
+        print("----------detect only 1 hand")
     if(len(data)==2):
         for i in range(0, len(data)):
-            #print(len(data))
             ymin  = data[i][0]
             ymax = data[i][1]
             xmin = data[i][2]
@@ -358,10 +364,13 @@ def check_data(data,img):
                 x,y = center
                 list_distance.append(distance)
                 box_arrow.append((x+xmin,y+ymin,p1+xmin,p2+ymin,name[0]))
-
+                #print("box_arrow",box_arrow)
+        print(list_distance)
         if(list_distance[0]!=list_distance[1]):
+            print("--")
             minute = max(list_distance)
             hour = min(list_distance)
+            print("min,hour:",minute,hour)
             idx_minute_hand = list_distance.index(minute)
             idx_hour_hand = list_distance.index(hour)
             minute_hand = ("minute",box_arrow[idx_minute_hand]) 
@@ -370,10 +379,12 @@ def check_data(data,img):
             box_hand.append(hour_hand)
             box_hand.append(minute_hand)
             score_4 = 2
+            print("score_4 in func:",score_4)
         else: 
-            score_4 = 1
-    else:
+            score_4 = 1      
+    if(len(data)==0 or len(data)>2):
         score_4 = 0
+    print("scooooore 4 before return:",score_4)
     return box_hand,list_hands,score_4
 def draw(x1,y1,r,angle):
     length = r
@@ -555,11 +566,13 @@ folder = os.path.join(CWD_PATH,IMAGETEST_FOLDER,'CDT_rewrite')
 id_folder = [name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))]
 font=cv2.FONT_ITALIC
 #id_folder = ['test1','test3','test4','test6','test8','test10','test11']
-for i in range(8,len(id_folder)):
+for i in range(0,len(id_folder)):
+    ch_eleven = 0
+    ch_two = 0
     try:
-        print(i,id_folder[i])
+        #print(i,id_folder[i])
         IMAGE_NAME = str(id_folder[i])
-        #IMAGE_NAME = 'e8vrbgb74'
+        #IMAGE_NAME = 'u40qe85tj'
         #PATH_TO_IMAGE = os.path.join(CDT_REWRITE,IMAGE_NAME,IMAGE_NAME+FILE)
         PATH_TO_IMAGE = os.path.join(CDT_REWRITE,IMAGE_NAME,IMAGE_NAME+FILE)
         #path to save result
@@ -602,7 +615,7 @@ for i in range(8,len(id_folder)):
         box_hand,list_hands,score_4 = check_data(data,rec)
         check_boxarrow(rec,box_hand,data_corr,h,k,r)
         #rule4    
-
+        print(score_4)
         #rule5
         if(ch_eleven==1):
             score_5 = score_5 + 1
@@ -626,7 +639,7 @@ for i in range(8,len(id_folder)):
         image_score = np.zeros((x,y,z ), np.uint8)
         image_score = cv2.putText(image_score, text_s4, (5, 50), font, fontScale, color, thickness, cv2.LINE_AA)
         image_score = cv2.putText(image_score, text_s5, (5, 100), font, fontScale, color, thickness, cv2.LINE_AA)
-        h_img = cv2.hconcat([original_img, image_score])
+        h_img = cv2.hconcat([rec, image_score])
         #Image.fromarray(h_img).show()
         try:
             cv2.imwrite(PATH_TO_RESULT,h_img)
@@ -635,7 +648,8 @@ for i in range(8,len(id_folder)):
             print("save success!")
         except OSError as error:
             print(error)
-        #Image.fromarray(rec).show()
+        Image.fromarray(rec).show()
     except OSError as error:
             print(error)
+    
     
