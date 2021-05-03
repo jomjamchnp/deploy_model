@@ -6,6 +6,7 @@ import tensorflow as tf
 import sys
 import json
 from collections import defaultdict
+from PIL import Image
 # This is needed since the notebook is stored in the object_detection folder.
 sys.path.append("..")
 
@@ -71,7 +72,7 @@ def detection():
         category_index,
         use_normalized_coordinates=True,
         line_thickness=8,
-        min_score_thresh=0.70)
+        min_score_thresh=0.85)
 
     coordinates = vis_util.return_coordinates(
             image,
@@ -81,7 +82,7 @@ def detection():
             category_index,
             use_normalized_coordinates=True,
             line_thickness=8,
-            min_score_thresh=0.70)
+            min_score_thresh=0.85)
 
     for coordinate in coordinates:
             print(coordinate)
@@ -94,9 +95,7 @@ def detection():
 
 
     output = image.copy()
-    cv2.imshow('Object detector', output)
-    #print(ALL)
-    #cv2.imwrite(ALL,output)
+    Image.fromarray(output).show()
     cv2.imwrite(PATH_TO_RESULT,output)
 
 
@@ -128,16 +127,18 @@ PATH_TO_LABELS = os.path.join(CWD_PATH,'training','labelmap.pbtxt')
 NUM_CLASSES = 2
 
 folder = os.path.join(CWD_PATH,IMAGETEST_FOLDER,CDT_PATH)
-#id_folder = [name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))]
-id_folder = ['test1','test3','test4','test6','test8','test10','test11']
+id_folder = [name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))]
+#id_folder = ['test1','test3','test4','test6','test8','test10','test11']
 for i in range(len(id_folder)):
-    #print(id_folder[i])
+    #ID = '0f6zqkidm'
+    print(i,id_folder[i])
     ID = id_folder[i]
     IMAGE_NAME = ID+'_hands.jpg'
-    IMAGE_FOLDER = 'image_test\\new\\dplit\\'
-    PATH_TO_IMAGE = os.path.join(CWD_PATH,IMAGE_FOLDER,IMAGE_NAME)
+    IMAGE_FOLDER = 'image_test\\CDT_rewrite'
+    PATH_TO_IMAGE = os.path.join(CWD_PATH,IMAGE_FOLDER,ID,IMAGE_NAME)
     RESULT_FOLDER = 'result\CDT_rewrite\\new\\'+ ID
     ALL = os.path.join(CWD_PATH,ALL_HANDS,IMAGE_NAME)
-    PATH_TO_RESULT = os.path.join(CWD_PATH,'result\\new',IMAGE_NAME)
+    PATH_TO_RESULT = os.path.join(CWD_PATH,'result\\CDT_rewrite',ID,IMAGE_NAME)
     detection()
+    break
 

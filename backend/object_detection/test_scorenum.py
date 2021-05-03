@@ -175,7 +175,7 @@ def check_clockwise(image,data,x_center,y_center,radius):
 
 	x1,y1 = x_center,y_center
 	an = 0
-	print(x_center,y_center,radius)
+	#print(x_center,y_center,radius)
 	number_list = []
 	for i in range(0,60):
 	# check each line
@@ -278,7 +278,7 @@ def check_clockwise(image,data,x_center,y_center,radius):
 
 def checkpoint(list,listp,classnum):
 	# cv2.circle()
-	print("list of boxnum : ",list[classnum-1][:4])
+	#print("list of boxnum : ",list[classnum-1][:4])
 	print("list tee kumlung check num in box:",list[classnum-1])
 	p1,p2 = listp
 	point = Point(p1, p2)
@@ -348,6 +348,7 @@ def changestrtoint(c1,c2,name):
 #ymin,ymax,xmin,xmax bounding box 
 def check_quardrant(name,total,xmin):
 	global c_errorQ1,c_errorQ2,c_errorQ3,c_errorQ4
+	#print("--check_quardrant--")
 	if (total==4):
 		mes = name+" in quardrant 1"
 		_,n = changestrtoint(0,0,name)
@@ -362,7 +363,7 @@ def check_quardrant(name,total,xmin):
 		list_ofq.append(l)
 		if(name!="ten" and name!="eleven"):
 			c_errorQ2 = c_errorQ2 + 1
-		print(c_errorQ2)
+		#print(c_errorQ2)
 	elif (total==12):
 		mes = name+" in quardrant 3"
 		_,n = changestrtoint(0,0,name)
@@ -407,6 +408,7 @@ def check_quardrant(name,total,xmin):
 
 def check_center(name,num,list_ofq):
 	global c_errorQ1,c_errorQ2,c_errorQ3,c_errorQ4
+	print("num:",num)
 	if (num==1):
 		mes = name+" in quardrant 1"
 		_,n = changestrtoint(0,0,name)
@@ -414,7 +416,7 @@ def check_center(name,num,list_ofq):
 		list_ofq.append(l)
 		if(name!="one" and name!="two"):
 			c_errorQ1 = c_errorQ1 + 1
-		print(c_errorQ1)
+		#print(c_errorQ1)
 	elif (num==2):
 		mes = name+" in quardrant 2"
 		_,n = changestrtoint(0,0,name)
@@ -429,7 +431,7 @@ def check_center(name,num,list_ofq):
 		list_ofq.append(l)
 		if(name!="seven" and name!="eight"):
 			c_errorQ3 = c_errorQ3 + 1
-		print(c_errorQ3)
+		#print(c_errorQ3)
 	elif (num==4):
 		mes = name+" in quardrant 4"
 		_,n = changestrtoint(0,0,name)
@@ -451,7 +453,7 @@ def checklist(temp):
 def changeclass(dif):
     arraylist = []
     my_array = np.array(dif)
-    print (len(my_array))
+    #print (len(my_array))
     # print (my_array[0])
     for i in range(len(my_array)):
         if (my_array[i] == 'one'):
@@ -489,8 +491,8 @@ IMAGE_FOLDER = 'image_test'
 RESULT_FOLDER = 'result\CDT_rewrite'
 ALL_RES = 'result\\new_score'
 CDT_REWRITE = 'image_test\CDT_rewrite'
-# IMAGE_WITHPREDICT = 'result\CDT_rewrite'
-IMAGE_WITHPREDICT = 'result\\new'
+IMAGE_WITHPREDICT = 'result\CDT_rewrite'
+#IMAGE_WITHPREDICT = 'result\\new'
 IMAGETEST_FOLDER = 'image_test'
 
 # Grab path to current working directory
@@ -502,9 +504,9 @@ font=cv2.FONT_ITALIC
 
 for i in range(0,len(id_folder)):
 	try:
-		#print(i,id_folder[i])
-		#IMAGE_NAME = str(id_folder[i])
-		IMAGE_NAME='test11'
+		print(i,id_folder[i])
+		IMAGE_NAME = str(id_folder[i])
+		#IMAGE_NAME='eqlkqpi1d'
 		line_list = []
 		listofp = [] 
 		line=[]
@@ -522,23 +524,23 @@ for i in range(0,len(id_folder)):
 		c_errorQ3 = 0 
 		c_errorQ4 = 0 
 		# Path to image
-		PATH_TO_IMAGE = os.path.join(IMAGE_WITHPREDICT,IMAGE_NAME+'.png')
+		PATH_TO_IMAGE = os.path.join(IMAGE_WITHPREDICT,IMAGE_NAME,IMAGE_NAME+'_num.jpg')
 		#print(PATH_TO_IMAGE)
 
 		#path to save result
-		PATH_TO_RESULT = os.path.join(RESULT_FOLDER,IMAGE_NAME+RES_FILE)
+		PATH_TO_RESULT = os.path.join(RESULT_FOLDER,IMAGE_NAME,IMAGE_NAME+RES_FILE)
 		PATH_TO_ALLRESULT = os.path.join(ALL_RES,IMAGE_NAME+RES_FILE)
 		#print(PATH_TO_RESULT)
 		#load json file
 		new_data_corr = []
 		data_circle = []
-		with open("json_num/CDT_rewrite/script_"+IMAGE_NAME+".json") as f:
+		with open("json_num/CDT_rewrite/script_"+IMAGE_NAME+"_num.json") as f:
 			data = json.load(f)
 		for p in data['coordinate']:
 			new_data_corr.append(p)
 		for p in data['circle']:
 			data_circle.append(p)
-		print("data_corr:",new_data_corr)
+		#print("data_corr:",new_data_corr)
 		x,y,r = data_circle
 		image = cv2.imread(PATH_TO_IMAGE)
 		output = image.copy()
@@ -565,7 +567,7 @@ for i in range(0,len(id_folder)):
 				p1,p2,p3,p4 = intersec(x,y,*(line_list[b]),*(line_list[b+1]),in_r)
 				pointcut = [line_list[b+1],(p3,p4),(p1,p2),line_list[b]]
 				listofp.append(pointcut)
-
+		
 		#load coordinates from json file
 		for i in range(0, len(new_data_corr)):
 			line.append(new_data_corr[i])
@@ -589,9 +591,9 @@ for i in range(0,len(id_folder)):
 
 		match,dif = checklist(listname)
 		#print("match? : ",match)
-		#print("diff= " ,dif) #คลาสที่ไม่มี 
+		print("diff= " ,dif) #คลาสที่ไม่มี 
 		for i in listname:
-			print(i)
+			#print(i)
 			digit = checkNumberClass(i)
 			list_digit.append(digit)
 
@@ -707,6 +709,11 @@ for i in range(0,len(id_folder)):
 			score_2 = 1
 		elif(c_error>=3 and c_error!=0):
 			score_2 = 0
+		if(len(new_data_corr)==0):
+			score_1 = 0
+			score_2 = 0
+			score_3 = 0
+		#load coordinates fro
 		print(point1,point2,point3)
 		print("1.Digit(1-12) =",score_1)
 		print("2.Digit in wrong quadrant =",score_2)
@@ -753,3 +760,4 @@ for i in range(0,len(id_folder)):
 
 
 
+	

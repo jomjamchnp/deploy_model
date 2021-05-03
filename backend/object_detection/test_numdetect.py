@@ -87,7 +87,7 @@ def detection():
 
     
     for coordinate in coordinates:
-                #print(coordinate)
+                print(coordinate)
                 #ymin,ymax,xmin,xmax
                 (y1, y2, x1, x2, accuracy, classification) = coordinate
                 #print(accuracy)
@@ -111,9 +111,8 @@ def detection():
     output = image.copy()
     gray = cv2.cvtColor(output, cv2.COLOR_BGR2GRAY)
     circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 120)
-
     circle_data = []
-
+    print(circles)
     # ensure at least some circles were found
     if circles is not None:
         #convert the (x, y) coordinates and radius of the circles to integers
@@ -130,7 +129,9 @@ def detection():
             cv2.line(output,start_hor,stop_hor, (0,0,0), (3))
             circle_data = [int(x),int(y),int(r)]
         
-
+    if circles is None:
+        circle_data = [int(484),int(484),int(486)]
+        
     with open(os.path.join(CWD_PATH,"json_num/CDT_rewrite/"+"script_"+IMAGE_NAME.split(".")[0]+".json"), "w",encoding='utf-8') as f:
         data = {
             'coordinate' : new_data,
@@ -140,7 +141,8 @@ def detection():
         f.write('\n')
         
     Image.fromarray(output).show()
-    cv2.imwrite(PATH_TO_RESULT,output)
+    #cv2.imwrite(PATH_TO_RESULT,output)
+    print("save success!")
 
     # Press any key to close the image
     cv2.waitKey(0)
@@ -156,7 +158,7 @@ IMAGETEST_FOLDER = 'image_test'
 CDT_PATH = 'CDT_rewrite'
 # Name of the directory containing the object detection module we're using
 MODEL_NAME = 'inference_graph'
-CDT_Rewrite = 'result\CDT_rewrite\\new'
+CDT_Rewrite = 'result\CDT_rewrite\\'
 
 # Path to frozen detection graph .pb file, which contains the model that is used
 # for object detection.
@@ -173,17 +175,18 @@ folder = os.path.join(CWD_PATH,IMAGETEST_FOLDER,CDT_PATH)
 id_folder = [name for name in os.listdir(folder) if os.path.isdir(os.path.join(folder, name))]
 
 for i in range(len(id_folder)):
-    #print(id_folder[i])
+    print(id_folder[i])
     #ID = str(id_folder[i])
-    ID = 'test11'
+    ID = 'klqqlptyt'
     #IMAGE_NAME = ID+'_num.jpg'
-    IMAGE_NAME = ID+'.png'
-    IMAGE_FOLDER = 'image_test\\new\\'
-    PATH_TO_IMAGE = os.path.join(CWD_PATH,IMAGE_FOLDER,IMAGE_NAME)
+    IMAGE_NAME = ID+'_num.jpg'
+    IMAGE_FOLDER = 'image_test\\CDT_rewrite\\'
+    PATH_TO_IMAGE = os.path.join(CWD_PATH,IMAGE_FOLDER,ID,IMAGE_NAME)
     print(PATH_TO_IMAGE)
-    RESULT_FOLDER = 'result\CDT_rewrite\\new\\'+ ID
+    RESULT_FOLDER = 'result\CDT_rewrite\\'+ ID
     CREATE = os.path.join(CWD_PATH,CDT_Rewrite,ID)
-    PATH_TO_RESULT = os.path.join(CWD_PATH,'result\\new',IMAGE_NAME)
+    PATH_TO_RESULT = os.path.join(CWD_PATH,'result\\CDT_rewrite',ID,IMAGE_NAME)
+    print(PATH_TO_RESULT)
     try: 
         os.mkdir(CREATE)
     except OSError as error: 
