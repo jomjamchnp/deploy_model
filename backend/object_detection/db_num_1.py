@@ -26,6 +26,11 @@ import tensorflow.compat.v1 as tf
 import sys
 import json
 from PIL import Image
+from tensorflow.python.client import device_lib
+import pathlib
+import argparse
+import ast
+
 # import firebase_admin
 # from firebase_admin import credentials
 # from firebase_admin import db
@@ -83,42 +88,70 @@ def num_detection(name,image):
     # PATH_TO_LABELS = os.path.join(CWD_PATH,'training','labelmap_number.pbtxt')
     PATH_TO_LABELS = './object_detection/training/labelmap_number.pbtxt'
     PATH_TO_IMAGE = os.path.join(CWD_PATH,IMAGE_FOLDER,ID_NAME+FILE)
-
+    # load_model()
     #Path JSON firebase
     # Number of classes the object detector can identify
     NUM_CLASSES = 12
     label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
     categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
     category_index = label_map_util.create_category_index(categories)
+
     # Load the Tensorflow model into memory.
     detection_graph = tf.Graph()
     with detection_graph.as_default():
         od_graph_def = tf.GraphDef()
-        with tf.gfile.GFile(PATH_TO_CKPT, 'rb') as fid:
+        with tf.io.gfile.GFile(PATH_TO_CKPT, 'rb') as fid:
             serialized_graph = fid.read()
             od_graph_def.ParseFromString(serialized_graph)
             tf.import_graph_def(od_graph_def, name='')
 
         sess = tf.Session(graph=detection_graph)
 
+    # Import the TF graph
+    # graph_def = tf.compat.v1.GraphDef()
+    # with tf.io.gfile.GFile(PATH_TO_CKPT, 'rb') as f:
+    #     graph_def.ParseFromString(f.read())
+    #     tf.import_graph_def(graph_def, name='')
+    #     sess = tf.Session()
     # Define input and output tensors (i.e. data) for the object detection classifier
     # Input tensor is the image
     image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
     detection_boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
     detection_scores = detection_graph.get_tensor_by_name('detection_scores:0')
     detection_classes = detection_graph.get_tensor_by_name('detection_classes:0')
-
+    # image_tensor = sess.graph.get_tensor_by_name('image_tensor:0')
+    # detection_boxes = sess.graph.get_tensor_by_name('detection_boxes:0')
+    # detection_scores = sess.graph.get_tensor_by_name('detection_scores:0')
+    # detection_classes = sess.graph.get_tensor_by_name('detection_classes:0')
+    
     # Number of objects detected
     num_detections = detection_graph.get_tensor_by_name('num_detections:0')
-
+    # num_detections = sess.graph.get_tensor_by_name('num_detections:0')
     # image = cv2.imread(PATH_TO_IMAGE)
+    
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image_expanded = np.expand_dims(image_rgb, axis=0)
     
+    # image_expanded = np.expand_dims(image_rgb, axis=1)
+    print(image_expanded.shape)
     # Perform the actual detection by running the model with the image as input
+    print("do it")
+    print(image_expanded.dtype)
     (boxes, scores, classes, num) = sess.run(
         [detection_boxes, detection_scores, detection_classes, num_detections],
         feed_dict={image_tensor: image_expanded})
+ 
+
+    # output_layer = 'loss:0'
+    # input_node = 'Placeholder:0'
+    # with tf.compat.v1.Session() as sess:
+    #     try:
+    #         prob_tensor = sess.graph.get_tensor_by_name(output_layer)
+    #         predictions = sess.run(prob_tensor, {input_node: [image_expanded] })
+    #     except KeyError:
+    #         print ("Couldn't find classification output layer: " + output_layer + ".")
+    #         print ("Verify this a model exported from an Object Detection project.")
+    #         exit(-1)
 
     # Draw the results of the detection (aka 'visulaize the results')
 
