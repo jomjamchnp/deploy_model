@@ -26,6 +26,7 @@ from shapely.geometry.polygon import Polygon
 from math import sqrt
 import re
 import os
+
 def intersec(x,y,b1,b2,c1,c2,r):
 	A = Point2D(x,y)
 	B = Point2D(b1,b2) #line1
@@ -37,7 +38,6 @@ def intersec(x,y,b1,b2,c1,c2,r):
 	f_1 = Segment2D(A, C)
 	# Circle with center A and radius 118 
 	c = Circle(A, sympify(r, rational=True))
-
 
 	i_0 = c.intersection(f_0)
 	i_1 = c.intersection(f_1)
@@ -156,6 +156,7 @@ def checkNumberClass(text):
         return 11
     elif(text == "twelve"):
         return 12
+
 #  check line in number's area
 def inArea(p,data) :
     number = 0
@@ -172,12 +173,14 @@ def inArea(p,data) :
             # print("true",num_text[0])
             number = checkNumberClass(num_text[0])
     return status,number
+
 def check_clockwise(image,data,x_center,y_center,radius):
 	# print("data clock", len(data))
 	output = image.copy()
 	line_list=[]
 	for i in data:
 		cv2.rectangle(output, (i[2], i[0]),(i[3], i[1]), (0, 255, 255), 2)
+		cv2.putText(output,str(i[5]),(i[3], i[1]), font, 0.8, (76, 179, 111), 2, cv2.LINE_AA)
 	x1,y1 = x_center,y_center
 	an = 0
 	print(x_center,y_center,radius)
@@ -282,21 +285,12 @@ def check_clockwise(image,data,x_center,y_center,radius):
 	return output,mes
 
 def checkpoint(list,listp,classnum):
-	
 	# cv2.circle()
 	print("list of boxnum : ",list[classnum-1][:4])
 	print(list[classnum-1])
 	p1,p2 = listp
 	point = Point(p1, p2)
 	polygon = Polygon(list[classnum-1][:4])
-	#if(polygon.contains(point) == True):
-	#while(True):
-	#checkInArea(top_left,bottom_right,p)
-	#[(399, 428), (381, 361), (434, 330), (483, 379)]
-	
-	# print(polygon.contains(point))
-	# print(polygon.contains(point))
-
 	return polygon.contains(point),classnum
 
 def changestrtoint(c1,c2,name):
@@ -623,88 +617,60 @@ def score_num(NAME,image_number):
         result = [[m, n, s,t,k+1] for m, n, s,t in sort_listofp]
         boxofnum.append(result[k])
 
-    print(boxofnum)
-    # cv2.circle(output,(717, 881),1,0,20)
-    # cv2.circle(output,(830, 443),1,0,10)
-    # cv2.circle(output,(748, 301),1,0,15)
-
-    #[(710, 126), (639, 197), (530, 134), (556, 38), 1]
-
     idx = arraylist
     print(idx)
-    for i in range(len(idx)):
-        print(idx)
-        sort_list_centroid.insert(int(idx[i])-1, (0,0,0))
-    print("sort_list_centroid",sort_list_centroid)
-    print(len(sort_list_centroid))
+	# if(len(boxofnum)>=len(sort_list_centroid)):
+	# 	size = len(boxofnum)
+	# if(len(sort_list_centroid)>len(boxofnum)):
+	# 	size = len(sort_list_centroid)
+
+    # for i in range(len(idx)):
+    #     print(idx)
+    #     sort_list_centroid.insert(int(idx[i])-1, (0,0,0))
+    # print("sort_list_centroid",sort_list_centroid)
+    # print(len(sort_list_centroid))
     cen=[]
+    item=[]
+    font=cv2.FONT_ITALIC
     #for i in range(len(boxofnum)):
-    for j in range (len(boxofnum)):
+    for j in range (len(sort_list_centroid)):
         a,b = sort_list_centroid[j][:2]
         print("centriod:",sort_list_centroid[j][2])
         boolean,classnum = checkpoint(boxofnum,sort_list_centroid[j][:2],sort_list_centroid[j][2])
         print(boolean)
-        list_boolean.append(boolean)
-        cv2.putText(output,str(boolean), (int(a),int(b)), font, 1, (116, 7, 97), 2, cv2.LINE_AA)
+        try:
+            list_boolean.append(boolean)
+            cv2.putText(output,str(boolean), (int(a),int(b)), font, 1, (116, 7, 97), 2, cv2.LINE_AA)
+        except OSError as error:
+            print(error)  
+            Image.fromarray(output).show()
+    print("list_boolean:",list_boolean)
+        # list_boolean.append(boolean)
+        # cv2.putText(output,str(boolean), (int(a),int(b)), font, 1, (116, 7, 97), 2, cv2.LINE_AA)
     # while(True):
 
-
-        
-    # for i in range(len(boxofnum)):
-    # 	for j in range(len(sort_list_centroid)):
-    # 		print(len(sort_list_centroid))
-    # 		print("i=",i," j=",j) 
-    # 		a,b = sort_list_centroid[j][:2]
-    # 		print(a,b,sort_list_centroid[j][2])
-    # 		boolean,classnum = checkpoint(boxofnum[i][:4],sort_list_centroid[j][:2],sort_list_centroid[j][2])
-    # 		if(boolean==True):
-    # 			sort_list_centroid.remove(sort_list_centroid[j])	
-    # 		print(sort_list_centroid)
-    # for i in range(len(boxofnum)):
-    # 	for j in range(len(sort_list_centroid)):
-    # 		a, b = sort_list_centroid[j][:2]		
-    # 		print("a,b:",a,b)
-    # 		print(j,"--------------")
-    # 		print(sort_list_centroid[j])
-    # 		print(boxofnum[i][4])
-    # 		boolean,classnum = checkpoint(boxofnum[i][:4],sort_list_centroid[j][:2],sort_list_centroid[j][2])
-    # 		if(boolean==True):
-    # 			sort_list_centroid.remove(sort_list_centroid[j])	
-    # 			num = (int(a),int(b)) , sort_list_centroid[j][2]
-    # 			cen.append(num)
-    # 			list_boolean.append(boolean)
-    # 		print(sort_list_centroid)
-    # 		cv2.circle(output,(int(a),int(b)), radius=0, color=(88, 89, 40), thickness=1)
-            #cen.append((int(a),int(b)))
-            #cv2.putText(output,str(boolean), (int(a),int(b)), font, 1, (116, 7, 97), 2, cv2.LINE_AA)
-            #list_boolean.append(boolean)
-    #check out of area of num
-    # print(list_boolean)
-    # print(cen)
-    # for i in range(len(list_boolean)):
-    # 	cv2.putText(output,boolean[i], cen[i], font, 1, (116, 7, 97), 2, cv2.LINE_AA)
-    t=[]
-    print(list_boolean)
-    for i in list_digit:
-        t.append(list_boolean[i-1])
-    if False in t :
+    if False in list_boolean :
         point3 = 0
+    if len(list_boolean) == 0:
+	    point3 = 0
     else:
-        point3 = 1
+	    point3 = 1
 
     #1.clockwise 2.arrange  3.located 1:yes 0:no
     #clockwise
     output,mes = check_clockwise(output,data_corr,x,y,r)
     if(mes=="clockwise"):
-        point1 = 1
-        point2 = 1
+	    point1 = 1
+	    point2 = 1
     elif(mes=="anti-clockwise"):
-        point1 = 0
-        point2 = 1
+	    point1 = 0
+	    point2 = 1
     elif(mes=="other form arrange"):
-        point1 = 0
-        point2 = 0
-
+	    point1 = 0
+	    point2 = 0
+    else: 
+	    point1 = 0
+	    point2 = 0
 
     total_point = point1+point2+point3
     if (total_point==3):
@@ -731,6 +697,7 @@ def score_num(NAME,image_number):
     # print("c_erroeQ4:",c_errorQ4)
 
     c_errorlist = [c_errorQ1,c_errorQ2,c_errorQ3,c_errorQ4]
+    print("c_errorlist:",c_errorlist)
     c_error = max(c_errorlist)
 
     if(c_error==0):
@@ -739,12 +706,44 @@ def score_num(NAME,image_number):
         score_2 = 1
     elif(c_error>=3 and c_error!=0):
         score_2 = 0
+
+    if(len(data_corr) == 0):
+        score_1 = 0
+        score_2 = 0
+        score_3 = 0
     print(point1,point2,point3)
     print("1.Digit(1-12) =",score_1)
     print("2.Digit in wrong quadrant =",score_2)
     print("3.Arrangement and sequencing of the numbers =",score_3)
-    Image.fromarray(output).show()
+    # Image.fromarray(output).show()
+    font = cv2.FONT_HERSHEY_SIMPLEX
+	# org
+    org = (5, 50)
+	# fontScale
+    fontScale = 1
+	# Blue color in BGR
+    color = (255,255,255)
+	# Line thickness of 2 px
+    thickness = 2
+    text_s1="1.Digit(1-12) ="+str(score_1)
+    text_s2="2.Digit in wrong quadrant ="+str(score_2)
+    text_s3="3.Arrangement and sequencing of the numbers ="+str(score_3)
+	# Using cv2.putText() method
+    x,y,z = np.shape(output)
+    image_score = np.zeros((x,y,z ), np.uint8)
+    image_score = cv2.putText(image_score, text_s1, (5, 50), font, fontScale, color, thickness, cv2.LINE_AA)
+    image_score = cv2.putText(image_score, text_s2, (5, 100), font, fontScale, color, thickness, cv2.LINE_AA)
+    image_score = cv2.putText(image_score, text_s3, (5, 150), font, fontScale, color, thickness, cv2.LINE_AA)
+    h_img = cv2.hconcat([output, image_score])
+    # print(PATH_TO_RESULT)
+    # try:
+	#     cv2.imwrite(PATH_TO_RESULT,h_img)
+	#     cv2.imwrite(PATH_TO_ALLRESULT,h_img)
+	#     print("save success!")
+	# except OSError as error:
+	# 	print(error)
 
+    Image.fromarray(h_img).show()
     #reset
     c_errorQ1=0
     c_errorQ2=0

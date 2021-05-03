@@ -19,6 +19,10 @@ def url_to_image(url):
 	# return the image
 	return image
 
+def diff_img_getUrl(img_number,img_total):
+	img_hands = cv2.absdiff(img_total, img_number)
+	img_last = cv2.bitwise_not(img_hands)
+	return img_last
 
 
 def diff_img():
@@ -73,4 +77,4 @@ def diff_img():
 	# cv2.imwrite(os.path.join(IMAGE_FOLDER,ID_NAME+'_num.jpg'),img_num)
 	# print(os.path.join(IMAGE_FOLDER,ID_NAME))
 	#cv2.waitKey(0)
-diff_img()
+# diff_img()

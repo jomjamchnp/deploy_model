@@ -13,6 +13,7 @@ import json
 from PIL import Image
 import os.path
 import posixpath
+from collections import defaultdict
 ch_eleven = 0
 ch_two = 0
 ID_NAME = "_h9ezb07yl"
@@ -27,23 +28,18 @@ def detect_line(roi,data):
     min_line_length = 10  # minimum number of pixels making up a line
     max_line_gap = 10  # maximum gap in pixels between connectable line segments
     line_image = np.copy(roi) * 0  # creating a blank to draw lines on
-    lines = cv2.HoughLinesP(edges, rho, theta, threshold, np.array([]),min_line_length, max_line_gap)
-    #print(lines)
+    kernel = np.ones((5, 5), np.uint8)
+    dilate = cv2.dilate(edges, kernel, iterations=2)
+    lines = cv2.HoughLinesP(dilate, rho, theta, threshold, np.array([]),min_line_length, max_line_gap)
     points = []
     for x1,y1,x2,y2 in lines[0]:
         cv2.line(line_image,(x1,y1),(x2,y2),(0,255,0),2)
-    # for line in lines:
-    #     for x1, y1, x2, y2 in line:
-    #         #points.append(((x1 + 0.0, y1 + 0.0), (x2 + 0.0, y2 + 0.0)))
-    #         cv2.line(line_image, (x1, y1), (x2, y2), (255, 0, 0), 5)
-    
     cv2.circle(line_image,(x1,y1),2,(249, 201, 251),10)   
     cv2.circle(line_image,(x2,y2),2,(249, 201, 251),10) 
     # show images
-    # Image.fromarray(line_image).show()
     return x1,y1,x2,y2
 
-def checkcrash(data_num,x1,y1,x2,y2,typehand,h,k,r,rec):
+def checkcrash(data_num,x1,y1,x2,y2,typehand,h,k,r,rec,output):
     list_crash = []
     list_status= []
     list_distance = []
@@ -54,6 +50,8 @@ def checkcrash(data_num,x1,y1,x2,y2,typehand,h,k,r,rec):
     newX2 = x2
     newY2 = y2
     distance = 0
+    cv2.circle(rec,(x1,y1),2,(205, 177, 82),2)
+    cv2.circle(rec,(x2,y2),2,(84, 82, 205),2)
     m = slope(x1,y1,x2,y2)
     i=1
     while(math.pow((newX1-h),2) + math.pow((newY1-k),2) <= math.pow((r),2)):
@@ -136,13 +134,23 @@ def checkcrash(data_num,x1,y1,x2,y2,typehand,h,k,r,rec):
 
     idx = list_distance.index(min(list_distance))
     x,y,newX,newY = list_crash[idx][0],list_crash[idx][1], list_crash[idx][2], list_crash[idx][3]
+    cv2.circle(rec,(x,y),2,(205, 177, 82),2)
+    cv2.circle(rec,(newX,newY),2,(84, 82, 205),2)
+    cv2.line(output,(x,y),(newX,newY),(234, 44, 44 ),5)
+    Image.fromarray(output).show()
     print(list_status[idx],list_num[idx],list_crash[idx][4])
-    cv2.line(rec,(x,y),(newX,newY),(255,123,45),3)  
+    # cv2.line(rec,(x,y),(newX,newY),(255,123,45),3)  
     if(list_crash[idx][4]=="hour" and list_num[idx]==11):
         ch_eleven = 1
     if(list_crash[idx][4]=="minute" and list_num[idx]==2):
         ch_two = 1
-    print("jam ",ch_eleven,ch_two)
+    print("conclusion score ",ch_eleven,ch_two)
+    if(list_status[idx]==False and list_num[idx]==0 and list_crash[idx][4]=="hour"):
+        #cv2.line(output,(x,y),(newX,newY),(234, 44, 44 ),5)
+        #Image.fromarray(output).show()
+        ch_eleven = check_arrowdegree(x,y,data_num,h,k,r,m,newX,newY,output,rec)
+        #print(x,y,newX,newY)
+    print("last ",ch_eleven,ch_two)   
     return ch_eleven,ch_two
     
 def checkNumberClass(text):
@@ -202,7 +210,7 @@ def checkline(h,k,xhead,yhead,xtail,ytail,rec,data_num,r,typehand):
     global ch_eleven,ch_two
     newX = xhead
     newY = yhead
-    print(xhead,yhead,xtail,ytail)
+    # print(xhead,yhead,xtail,ytail)
     i= -1
     if(xhead>xtail):
         i=1
@@ -247,7 +255,7 @@ def checkarrowinbox(h,k,xhead,yhead,xtail,ytail,rec,data_num,r,typehand):
             if(number==2 and typehand=="minute"):
                 ch_two = 1
             break
-    print(status,number,typehand)
+    # print(status,number,typehand)
     return ch_eleven,ch_two
 
 
@@ -283,7 +291,7 @@ def detect_arrow(img):
     for i in list_center:
         x,y = i
         distance = math.sqrt(((xmean-x)**2)+((ymean-y)**2) )
-        dist = int(distance)
+        dist = float(distance)
         max_corr.append((x,y))
         list_dist.append(dist)
     idx = list_dist.index(max(list_dist))
@@ -291,53 +299,31 @@ def detect_arrow(img):
     distance = max(list_dist)
     (p1,p2) = max_corr[idx]
     #print(max_corr[idx])
-    # cv2.circle(img,(max_corr[idx]),2,(11, 170, 53),10)
-    # cv2.circle(img,center,2,(221, 238, 45),5)
-    # Image.fromarray(img).show()
-
-        # maxval=0
-        # for i in range(0, len(list_dist)):
-        #     #print(list_dist[i][2])
-        #     if (list_dist[i][2]>=maxval):
-        #         maxval = list_dist[i][2]
-        #         print(maxval)
-        #         p1,p2 = list_dist[i][0],list_dist[i][1]
-    # namemean = img,center,p1,p2
-    # list_namemean.append(namemean)
-    # print(p1,p2)
-    # cv2.circle(img,(p1,p2),2,(11, 170, 53),10)
-    # cv2.circle(img,center,2,(11, 170, 53),5)
-    # cv2.imshow('p1p2',img)
-    # cv2.waitKey(0)
-    # return img,center,p1,p2
     return distance,(p1,p2),center
 
-def check_boxarrow(rec,box_hand,data_num,h,k,r):
+def check_boxarrow(rec,box_hand,data_num,h,k,r,output):
     print(box_hand) #[('hour', (370, 198, 395, 169, 'arrow')), ('miniute', (305, 192, 329, 227, 'arrow'))]
     for i in range(0,len(box_hand)):
         #print(box_hand[i][1][4])
         if(box_hand[i][1][4]=="arrow"):
-            checkcrash(data_num,box_hand[i][1][0],box_hand[i][1][1],box_hand[i][1][2],box_hand[i][1][3],box_hand[i][0],h,k,r,rec)
+            checkcrash(data_num,box_hand[i][1][0],box_hand[i][1][1],box_hand[i][1][2],box_hand[i][1][3],box_hand[i][0],h,k,r,rec,output)
         if(box_hand[i][1][4]=="arrownohead"):
-            checkcrash(data_num,box_hand[i][1][0],box_hand[i][1][1],box_hand[i][1][2],box_hand[i][1][3],box_hand[i][0],h,k,r,rec)
+            checkcrash(data_num,box_hand[i][1][0],box_hand[i][1][1],box_hand[i][1][2],box_hand[i][1][3],box_hand[i][0],h,k,r,rec,output)
 
 def arrownohead(xmin,ymin,lenx,leny,data_corr,rec):
     roi = rec[ymin:ymin+leny,xmin:xmin+lenx]
     # Image.fromarray(roi).show()
     x1,y1,x2,y2 = detect_line(roi,data_corr)
     distance = math.sqrt( ((x1-x2)**2)+((y1-y2)**2))
-    # cv2.circle(rec,(x1+xmin,y1+ymin),1,(72, 45, 238),5)
-    # cv2.circle(rec,(x2+xmin,y2+ymin),1,(72, 45, 238),5)
-    #Image.fromarray(rec).show()
     print(distance,x1,y1,x2,y2)
     return distance,x1,y1,x2,y2
 
 def arrow(xmin,ymin,lenx,leny,data_corr,rec):
     roi = rec[ymin:ymin+leny,xmin:xmin+lenx]
+    Image.fromarray(rec).show()
+    Image.fromarray(roi).show()
     distance,(p1,p2),center = detect_arrow(roi) #p1,p2 : tail
     x,y = center
-    #cv2.circle(rec,(x+xmin,y+ymin),1,(72, 45, 238),5)
-    #Image.fromarray(rec).show()
     return distance,(p1,p2),center
 
 def check_data(data,data_corr,img):
@@ -345,6 +331,10 @@ def check_data(data,data_corr,img):
     list_hands = []
     box_arrow = []
     box_hand = []
+    print("data:",data," len:",len(data))
+    if(len(data)==1):
+        score_4 = 1
+        print("----------detect only 1 hand")
     if(len(data)==2):
         for i in range(0, len(data)):
             #print(len(data))
@@ -384,12 +374,166 @@ def check_data(data,data_corr,img):
             score_4 = 2
         else: 
             score_4 = 1
-        # print(second_hand,box_arrow[idx_second_hand])
-        # print(hour_hand,box_arrow[idx_hour_hand])
-    else:
+    if(len(data)==0 or len(data)>2):
         score_4 = 0
+
     return box_hand,list_hands,score_4
 
+def draw(x1,y1,r,angle):
+    length = r
+    theta = angle * 3.14 / 180
+    #print(theta)
+    x2 = x1 + length * cos(theta)
+    y2 = y1 + length * sin(theta) 
+    return x2,y2
+
+def angle(s1, s2): 
+    return math.degrees(math.atan((s2-s1)/(1+(s2*s1))))
+
+def clockwise(data_num,x_center,y_center,radius,angle,output,rec):
+
+    x1,y1 = x_center,y_center
+    eleven_line=[]
+    allpoint = []
+    an = -angle
+    #print(x_center,y_center,radius)
+    number_list = []
+    for i in range(0,60):
+	# check each line
+        x2,y2 = draw(x1,y1,radius,an)
+        cv2.line(output,(x1,y1),(int(x2),int(y2)),(0,0,0),(1))
+        getSlope = slope(x1,y1,x2,y2)
+        c1 = y1-(getSlope*x1)
+        a,b = x1,x2
+        c,d = y1,y2
+        if (x1 < x2):
+            a = x1
+            b = x2
+        elif (x1 > x2):
+            a = x2
+            b = x1
+        if (y1 < y2):
+            c = y1
+            d = y2
+        elif (y1 > y2):
+            c = y2
+            d = y1      
+        num_in_line = []
+	# check each point 90 and 270
+        if an == 90 or an == 270:
+            for i in range(int(c),int(d)):
+                newX = (i - c1)/getSlope
+                status,num = inArea((int(newX),i),data_num,rec)
+                #cv2.circle(output, (int(newX),i),2, (0, 128, 255), 2)
+                if (status):
+                    if (len(num_in_line) == 0):
+                        num_in_line.append(num)
+                        allpoint.append(((int(newX),i)))
+                        if(num==11):
+                            eleven = (int(newX),i)
+                            eleven_line.append(eleven)
+                    else:
+                        if (num != num_in_line[len(num_in_line)-1]):
+                            num_in_line.append(num)
+                            allpoint.append(((int(newX),i)))
+                            if(num==11):
+                                eleven = (int(newX),i)
+                                eleven_line.append(eleven)
+        else:
+            for i in range(int(a),int(b)):
+                newY = (getSlope*i)+ c1
+                status,num = inArea((i,int(newY)),data_num,rec)
+                #print(status)
+                #cv2.circle(output, (i,int(newY)),2, (0, 128, 255), 2)
+                if (status):
+                    if (len(num_in_line) == 0):
+                        num_in_line.append(num)
+                        allpoint.append(((i,int(newY))))
+                        if(num==11):
+                            eleven = (i,int(newY))
+                            eleven_line.append(eleven)
+                    else:
+                        if (num != num_in_line[len(num_in_line)-1]):
+                            num_in_line.append(num)
+                            allpoint.append(((i,int(newY))))
+                            if(num==11):
+                                eleven = (i,int(newY))
+                                eleven_line.append(eleven)
+        #Image.fromarray(output).show()
+        if len(num_in_line) != 0:
+            number_list.append(num_in_line)
+            a = 1
+        an = an-6
+
+    # indexes = [index for index in range(len(number_list)) if number_list[index] == '[11]']
+    if(len(number_list)!=0):
+        if(number_list[0]==[11]):
+            check = 1
+            indices = [i for i, x in enumerate(number_list) if x == [11]]
+            #print(allpoint[max(indices)+1])
+            next_point = allpoint[len(number_list)-1]
+            #print("eleven_line:",eleven_line)
+            # for i in eleven_line:
+            #     print(i)
+            #     cv2.circle(output,(i[0],i[1]),3,(236, 130, 30),5)
+            average = [sum(x)/len(x) for x in zip(*eleven_line)]
+            #print(average)
+            point_eleven = average
+            cv2.circle(output,(int(average[0]),int(average[1])),3,(126, 236, 80 ),5)
+            cv2.circle(output,(int(next_point[0]),int(next_point[1])),3,(126, 236, 80 ),5)
+        else:
+            check=0
+            point_eleven=0
+            next_point=0
+        status = 0
+    if(len(number_list)==0):
+        check=0
+        point_eleven=0
+        next_point=0
+
+    return point_eleven,next_point,check
+
+def getAngle(a, b, c):
+    ang = math.degrees(math.atan2(c[1]-b[1], c[0]-b[0]) - math.atan2(a[1]-b[1], a[0]-b[0]))
+    return ang + 360 if ang < 0 else ang
+
+def check_arrowdegree(x1,y1,data_num,h,k,r,m,x2,y2,output,rec):#x,y,data_num,h,k,r,m,newX,newY
+    ch_eleven = 0
+    newX,newY = 0,0
+    for i in data_num:
+         cv2.rectangle(output, (i[2], i[0]),(i[3], i[1]), (0, 255, 255), 2)
+    #Image.fromarray(output).show()
+    print("--check_arrowdegree--")
+    cv2.line(output,(x1,y1),(x2,y2),(184,158,170),3)
+    m = slope(x1,y1,x2,y2)
+    newX = newX-1         
+    newY = y1-(m*(x1 + newX))
+    dist = math.sqrt((x1 - newX)**2 + (y1 - newY)**2)
+    x3,y3 = draw(x1,y1,dist,0)
+    #cv2.line(output,(x1,y1),(int(x3),int(y3)),(29, 120, 15 ),2)
+    get_angle = getAngle((x2,y2), (x1, y1), (x3,y3))
+    #print('Angle = ',get_angle)
+    x4,y4 = draw(x1,y1,dist,-get_angle)
+    point_1,point_2,check = clockwise(data_num,x1,y1,r,get_angle,output,rec)
+    if(check==1):
+        theta1 = getAngle(point_1,(x1, y1),point_2)
+        theta2 = getAngle(point_1,(x1, y1),(x2,y2))
+
+        if(theta2<(0.5)*theta1):
+            ch_eleven = 1
+            print("correct")
+        else:
+            ch_eleven = 0
+    # x5,y5 = draw(x1,y1,dist,-theta1)
+    #print("int(point_1[0]),int(point_1[1]):",point_1)
+    #cv2.line(output,(x1,y1),(int(point_1[0]),int(point_1[1])),(0, 9, 69),2)
+    #cv2.circle(output,(int(point_1[0]),int(point_1[1])),3,(126, 236, 80 ),5)
+    # x6,y6 = draw(x1,y1,dist,-theta2)
+    # cv2.line(output,(x1,y1),(int(point_2[0]),int(point_2[1])),(102, 198, 42 ),2)
+    #cv2.circle(output,(int(point_2[0]),int(point_2[1])),3,(126, 236, 80 ),5)
+    #cv2.line(output,(x1,y1),(int(x4),int(y4)),(120, 156, 237 ),2)
+    # Image.fromarray(output).show()
+    return ch_eleven
 
 def score_hand(name,img_hands):    
     # Name of the directory containing the object detection module we're using
@@ -397,7 +541,7 @@ def score_hand(name,img_hands):
     IMAGE_NAME = name
     FILE = '_hands.jpg'
     IMAGE_FOLDER = 'image_test'
-
+    # Image.fromarray(img_hands).show()
     # Grab path to current working directory
     CWD_PATH = os.getcwd()
     PREVIOS_PATH = os.path.abspath(CWD_PATH+ "/../")
@@ -429,6 +573,7 @@ def score_hand(name,img_hands):
     minute_hand = 0
     output = img_hands.copy()
     rec = img_hands.copy()
+
     font=cv2.FONT_ITALIC
     #data[0][0] = ymin , data[0][1]=ymax, data[0][2]=xmin, data[0][3]=xmax
     h,k,r = data_circle
@@ -437,7 +582,7 @@ def score_hand(name,img_hands):
     score_5 = 0
 
     box_hand,list_hands,score_4 = check_data(data,data_corr,rec)
-    check_boxarrow(rec,box_hand,data_corr,h,k,r)
+    check_boxarrow(rec,box_hand,data_corr,h,k,r,output)
     #rule4    
 
     #rule5
@@ -448,6 +593,21 @@ def score_hand(name,img_hands):
 
     print("4.have 2 hands: ",score_4)
     print("5.hands on correct digit:",score_5)
+    # org
+    org = (5, 50)
+    # fontScale
+    fontScale = 1
+	# Blue color in BGR
+    color = (255,255,255)
+    # Line thickness of 2 px
+    thickness = 2
+    text_s4="4.have 2 hands = "+str(score_4)
+    text_s5="5.hands on correct digit = "+str(score_5)
+    x,y,z = np.shape(output)
+    image_score = np.zeros((x,y,z ), np.uint8)
+    image_score = cv2.putText(image_score, text_s4, (5, 50), font, fontScale, color, thickness, cv2.LINE_AA)
+    image_score = cv2.putText(image_score, text_s5, (5, 100), font, fontScale, color, thickness, cv2.LINE_AA)
+    h_img = cv2.hconcat([rec, image_score])
     Image.fromarray(rec).show()
     cv2.imwrite(os.path.join(IMAGE_FOLDER,ID_NAME+'frame.jpg'),rec)
     return score_4,score_5

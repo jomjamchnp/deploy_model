@@ -181,7 +181,8 @@ def build_pnasnet_large(images,
         'data format for increased speed on GPU.')
 
   if hparams.data_format == 'NCHW':
-    images = tf.transpose(a=images, perm=[0, 3, 1, 2])
+    # images = tf.transpose(a=images, perm=[0, 3, 1, 2])
+    images = tf.transpose(a=images, perm=[0, 1, 2, 3])
 
   # Calculate the total number of cells in the network.
   # There is no distinction between reduction and normal cells in PNAS so the
@@ -230,7 +231,8 @@ def build_pnasnet_mobile(images,
         'data format for increased speed on GPU.')
 
   if hparams.data_format == 'NCHW':
-    images = tf.transpose(a=images, perm=[0, 3, 1, 2])
+    # images = tf.transpose(a=images, perm=[0, 3, 1, 2])
+    images = tf.transpose(a=images, perm=[0, 1, 2, 3])
 
   # Calculate the total number of cells in the network.
   # There is no distinction between reduction and normal cells in PNAS so the

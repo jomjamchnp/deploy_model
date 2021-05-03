@@ -41,23 +41,12 @@ from backend.object_detection.utils import visualization_utils as vis_util
 #from utils import eval_util as eval_utils
 from object_detection.utils import json_utils
 from object_detection.protos import eval_pb2
-
+from collections import defaultdict
+os.environ["CUDA_VISIBLE_DEVICES"]="-1"
 # Grab path to current working directory
 CWD_PATH = os.getcwd()
-tf.disable_v2_behavior()
-# #Path JSON firebase
-# KEY = os.path.join(CWD_PATH,"psychopaint-app-firebase-adminsdk-jcnly-c9ee2ded1d.json")
-
-# ####DATABASE
-# # Fetch the service account key JSON file contents
-# cred = credentials.Certificate(KEY)
-# # Initialize the app with a custom auth variable, limiting the server's access
-# firebase_admin.initialize_app(cred, {
-#     'databaseURL': 'https://psychopaint-app.firebaseio.com'
-# })
-
-# firebase = firebase.FirebaseApplication('https://psychopaint-app.firebaseio.com', None)
-# result = firebase.get('/CDT/'+ID_NAME+'/drawing_info/number/url','')
+# tf.disable_v2_behavior()
+tf.compat.v1.disable_eager_execution()
 
 
 def url_to_image(url):
@@ -67,6 +56,7 @@ def url_to_image(url):
 	# return the image
 	return image
 
+# function for detect number 
 def num_detection(name,image):
     # Name of the directory containing the object detection module we're using
     MODEL_NAME = 'inference_graph'
@@ -76,18 +66,15 @@ def num_detection(name,image):
 
     # Grab path to current working directory
     CWD_PATH = os.getcwd()
-    # PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,'frozen_inference_graph_number.pb')
     PATH_TO_CKPT = './object_detection/inference_graph/frozen_inference_graph_number.pb'
-    # PATH_TO_LABELS = os.path.join(CWD_PATH,'training','labelmap_number.pbtxt')
     PATH_TO_LABELS = './object_detection/training/labelmap_number.pbtxt'
-    PATH_TO_IMAGE = os.path.join(CWD_PATH,IMAGE_FOLDER,ID_NAME+FILE)
 
-    #Path JSON firebase
     # Number of classes the object detector can identify
     NUM_CLASSES = 12
     label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
     categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
     category_index = label_map_util.create_category_index(categories)
+    
     # Load the Tensorflow model into memory.
     detection_graph = tf.Graph()
     with detection_graph.as_default():
@@ -95,9 +82,14 @@ def num_detection(name,image):
         with tf.gfile.GFile(PATH_TO_CKPT, 'rb') as fid:
             serialized_graph = fid.read()
             od_graph_def.ParseFromString(serialized_graph)
+            print("test print: ",od_graph_def.ParseFromString(serialized_graph))
             tf.import_graph_def(od_graph_def, name='')
 
-        sess = tf.Session(graph=detection_graph)
+        config = tf.compat.v1.ConfigProto(
+            device_count = {'GPU': 0}
+        )
+        # sess = tf.compat.v1.Session(graph=detection_graph)
+        sess = tf.Session(graph=detection_graph,config=config)
 
     # Define input and output tensors (i.e. data) for the object detection classifier
     # Input tensor is the image
@@ -105,21 +97,24 @@ def num_detection(name,image):
     detection_boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
     detection_scores = detection_graph.get_tensor_by_name('detection_scores:0')
     detection_classes = detection_graph.get_tensor_by_name('detection_classes:0')
-
+    print(image_tensor)
+    print(detection_boxes)
+    print(detection_scores)
+    print(detection_classes)
     # Number of objects detected
     num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 
-    # image = cv2.imread(PATH_TO_IMAGE)
+    # convert image to rgb and shape in [None,w,h,c] 
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image_expanded = np.expand_dims(image_rgb, axis=0)
-    
+    print(image_expanded.shape)
+
     # Perform the actual detection by running the model with the image as input
     (boxes, scores, classes, num) = sess.run(
         [detection_boxes, detection_scores, detection_classes, num_detections],
         feed_dict={image_tensor: image_expanded})
 
     # Draw the results of the detection (aka 'visulaize the results')
-
     vis_util.visualize_boxes_and_labels_on_image_array(
         image,
         np.squeeze(boxes),
@@ -128,7 +123,7 @@ def num_detection(name,image):
         category_index,
         use_normalized_coordinates=True,
         line_thickness=8,
-        min_score_thresh=0.8)
+        min_score_thresh=0.3)
 
     coordinates = vis_util.return_coordinates(
             image,
@@ -138,21 +133,37 @@ def num_detection(name,image):
             category_index,
             use_normalized_coordinates=True,
             line_thickness=8,
-            min_score_thresh=0.8)
+            min_score_thresh=0.3)
 
     for coordinate in coordinates:
                 print(coordinate)
                 #ymin,ymax,xmin,xmax
                 (y1, y2, x1, x2, accuracy, classification) = coordinate
-
+   
+    #get only high score
+    new_data = []
+    f = defaultdict(list)
+    for i in range(0, len(coordinates)):
+        num = coordinates[i][4]
+        name = coordinates[i][5][0].split(":")
+        f[name[0]].append(num)
+    res =  list(zip(f, map(max, f.values())))
+    list_index_hands = []
+    for i in range(0,len(res)):
+        idx = [x[4] for x in coordinates].index(res[i][1]) 
+        list_index_hands.append(idx)
+    new_data = []
+    for i in list_index_hands:
+        new_data.append(coordinates[i])
 
     output = image.copy()
     gray = cv2.cvtColor(output, cv2.COLOR_BGR2GRAY)
-    circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 100)
-
+    circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 120)
     circle_data = []
 
     # ensure at least some circles were found
+    if circles is None:
+        circle_data = [int(484),int(484),int(486)]
     if circles is not None:
         #convert the (x, y) coordinates and radius of the circles to integers
         circles = np.round(circles[0, :]).astype("int")
@@ -176,7 +187,7 @@ def num_detection(name,image):
     # os.path.join(CWD_PATH,"json_num/"+"script"+ID_NAME.split(".")[0]+".json"
     with open("./object_detection/json_num/script_number.json", "w",encoding='utf-8') as f:
         data = {
-            'coordinate' : coordinates,
+            'coordinate' : new_data,
             'circle' : circle_data
         }
         json.dump(data, f,ensure_ascii=False)

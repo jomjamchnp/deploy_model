@@ -23,20 +23,9 @@ from backend.object_detection.utils import visualization_utils as vis_util
 #from utils import eval_util as eval_utils
 from object_detection.utils import json_utils
 from object_detection.protos import eval_pb2
-
+from collections import defaultdict
 CWD_PATH = os.getcwd()
 tf.disable_v2_behavior()
-#Path JSON firebase
-# KEY = os.path.join(CWD_PATH,"psychopaint-app-firebase-adminsdk-jcnly-c9ee2ded1d.json")
-
-# ####DATABASE
-# cred = credentials.Certificate(KEY)
-# firebase_admin.initialize_app(cred, {
-#     'databaseURL': 'https://psychopaint-app.firebaseio.com'
-# })
-# firebase = firebase.FirebaseApplication('https://psychopaint-app.firebaseio.com', None)
-# result = firebase.get('/CDT/'+ID_NAME+'/drawing_info/number/url','')
-
 
 def url_to_image(url):
 	resp = urllib.request.urlopen(url)
@@ -92,13 +81,15 @@ def hand_detection(name,image_hand):
 
     # Load image using OpenCV and
     # image = cv2.imread(PATH_TO_IMAGE)
-    image_rgb = cv2.cvtColor(image_hand, cv2.COLOR_BGR2RGB)
+    image_hand_test = image_hand.copy()
+    image_rgb = cv2.cvtColor(image_hand_test, cv2.COLOR_BGR2RGB)
     image_expanded = np.expand_dims(image_rgb, axis=0)
 
     # Perform the actual detection by running the model with the image as input
     (boxes, scores, classes, num) = sess.run(
         [detection_boxes, detection_scores, detection_classes, num_detections],
         feed_dict={image_tensor: image_expanded})
+    
     # Draw the results of the detection (aka 'visulaize the results')
     vis_util.visualize_boxes_and_labels_on_image_array(
         image_hand,
@@ -108,7 +99,7 @@ def hand_detection(name,image_hand):
         category_index,
         use_normalized_coordinates=True,
         line_thickness=8,
-        min_score_thresh=0.70)
+        min_score_thresh=0.85)
 
     coordinates = vis_util.return_coordinates(
             image_hand,
@@ -118,7 +109,7 @@ def hand_detection(name,image_hand):
             category_index,
             use_normalized_coordinates=True,
             line_thickness=8,
-            min_score_thresh=0.70)
+            min_score_thresh=0.85)
 
     for coordinate in coordinates:
             print(coordinate)
